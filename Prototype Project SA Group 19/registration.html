@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNRH Smart HIS - จุดลงทะเบียนผู้ป่วยและตรวจสอบสิทธิเวชระเบียน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Thai', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                <div>
+                    <h1 class="font-bold text-emerald-800 text-base leading-tight">MNRH Smart HIS</h1>
+                    <select class="text-xs text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer font-medium">
+                        <option>จุดลงทะเบียนเวชระเบียน (Counter 02)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" placeholder="ค้นหาด้วย HN, เลขบัตร ปชช., ชื่อ-สกุล, หรือเบอร์โทร... (Ctrl+K)" class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs">
+            <span class="flex items-center text-emerald-600 font-medium bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200"><span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1.5 animate-pulse"></span> Smart Card & สปสช. API ออนไลน์</span>
+            <div class="relative cursor-pointer text-slate-600">🔔</div>
+            <div class="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg text-emerald-900 font-medium leading-tight">
+                จนท. สมหญิง ใจดี <br><span class="text-[10px] text-slate-500 font-normal">(เวชระเบียน)</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-600 pl-2 border-l border-slate-200">
+                08:30 น.
+            </div>
+            <!-- ปุ่มออกจากระบบ (Logout Button อยู่มุมบนขวา) -->
+            <button onclick="goToDept('login')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 transition shadow-sm cursor-pointer" title="ออกจากระบบ">
+                <span>🚪</span> ออกจากระบบ
+            </button>
+        </div>
+    </header>
+
+    <!-- Status Banner Bar -->
+    <section class="bg-white border-b border-slate-200 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-2 shadow-sm text-xs">
+        <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span class="font-bold text-slate-700">สถานะการทำงาน: พร้อมรับลงทะเบียนผู้ป่วย</span>
+            <span class="text-slate-400">(Ready for new patient)</span>
+        </div>
+        <div class="text-slate-600 flex items-center gap-4">
+            <span>เครื่องอ่านบัตรประชาชน: เสียบเชื่อมต่อแล้ว (Slot 1)</span>
+            <span>เครื่องพิมพ์ใบนำทาง: ออนไลน์</span>
+            <div class="bg-slate-100 px-2.5 py-1 rounded-lg font-bold text-slate-800 border border-slate-200">
+                ลงทะเบียนแล้ววันนี้: 142 ราย <span class="font-normal text-slate-500 text-[10px]">(ผู้ป่วยใหม่: 18 ราย | ผู้ป่วยเก่า: 124 ราย)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Workspace (3 Columns Layout) -->
+    <main class="flex-1 flex flex-col overflow-hidden p-3 gap-2">
+        
+        <!-- หัวข้อหน้าจอหลัก -->
+        <div class="flex justify-between items-center px-1 shrink-0">
+            <div class="text-xs font-bold text-slate-700">
+                จุดลงทะเบียนผู้ป่วยและตรวจสอบสิทธิเวชระเบียน <span class="text-[11px] font-normal text-slate-400">/ Medical Records & Registration Station</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-500">
+                โรงพยาบาลมหาราชนครราชสีมา · OPD
+            </div>
+        </div>
+
+        <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden">
+            
+            <!-- Column 1: Rapid Patient Intake & Recent Registrations (Span 3) -->
+            <aside class="col-span-3 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden shadow-sm p-3 gap-3">
+                
+                <!-- Rapid Patient Intake Box -->
+                <div class="border border-slate-200 rounded-xl p-2.5 bg-slate-50/50 space-y-2 shrink-0">
+                    <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <span>📥</span> รับข้อมูลผู้ป่วย <span class="text-[9px] text-slate-400 font-normal">Rapid patient intake</span>
+                    </h3>
+                    <button class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 transition shadow-sm">
+                        <span>💳</span> เสียบบัตร ปชช. (Smart Card)
+                    </button>
+                    <button class="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium py-1.5 rounded-lg text-[11px] transition">
+                        เด็กอายุต่ำกว่า 7 ปี <span class="text-[9px] text-slate-400 block">(ใช้บัตรปชช.ผู้ปกครอง/สูติบัตร)</span>
+                    </button>
+                    <button class="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-medium py-1.5 rounded-lg text-[11px] transition">
+                        ชาวต่างชาติ / Passport
+                    </button>
+                    <div class="relative pt-0.5">
+                        <input type="text" placeholder="🔍 หรือพิมพ์ค้นหา HN เติม..." class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-[11px] focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <!-- Recent Registrations List -->
+                <div class="flex-1 flex flex-col overflow-hidden">
+                    <div class="flex items-center justify-between text-xs pb-1 shrink-0">
+                        <span class="font-bold text-slate-800">ลงทะเบียนล่าสุด</span>
+                        <span class="text-[10px] text-slate-400">4 รายการล่าสุด</span>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto space-y-2 text-xs pr-1">
+                        <!-- Recent 1 -->
+                        <div onclick="selectPatient({
+                            name: 'นาย สมชาย ใจดี', id: '1-3099-00123-45-6', hn: '6701-2345', dob: '15 มี.ค. 2523 (อายุ 46 ปี)',
+                            phone: '081-234-5678', gender: 'ชาย', address: '123 หมู่ 4 ต.ในเมือง อ.เมือง จ.นครราชสีมา 30000',
+                            vn: 'VN-691031-0142', dept: 'จุดคัดกรองพยาบาล (Station 02) / แผนกผู้ป่วยนอก OPD',
+                            rightName: 'หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)', hosp: 'โรงพยาบาลมหาราชนครราชสีมา (รหัส 10668)',
+                            cc: 'มีไข้ เจ็บคอ 2 วัน มาขอยาตรวจรักษา', queue: 'B-024', location: 'จุดคัดกรองพยาบาล OPD อาคาร 1 ชั้น 1'
+                        }, this)" class="reg-card border-2 border-emerald-500 bg-emerald-50/40 rounded-xl p-2.5 cursor-pointer transition shadow-sm">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-slate-900">A-023 นาย ว***</span>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-medium">✓ สำเร็จ</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500">VN-691031-0141 · 08:29 น.</p>
+                        </div>
+
+                        <!-- Recent 2 -->
+                        <div onclick="selectPatient({
+                            name: 'นาง สาวิณี รุ่งเรือง', id: '3-3099-00456-12-3', hn: '6701-2980', dob: '12 ส.ค. 2518 (อายุ 54 ปี)',
+                            phone: '089-876-5432', gender: 'หญิง', address: '45/1 ถ.มิตรภาพ ต.หนองบัวศาลา อ.เมือง จ.นครราชสีมา 30000',
+                            vn: 'VN-691031-0143', dept: 'คลินิกโรคเรื้อรัง (NCDs)',
+                            rightName: 'ข้าราชการ / เบิกจ่ายตรงกรมบัญชีกลาง', hosp: 'โรงพยาบาลมหาราชนครราชสีมา (รหัส 10668)',
+                            cc: 'มารับยาโรคความดันโลหิตสูงตามนัด', queue: 'B-025', location: 'คลินิกอายุรกรรม อาคารผู้ป่วยนอก ชั้น 2'
+                        }, this)" class="reg-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-slate-900">B-023 นาง ส***</span>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-medium">✓ สำเร็จ</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500">VN-691031-0140 · 08:28 น.</p>
+                        </div>
+
+                        <!-- Recent 3 -->
+                        <div onclick="selectPatient({
+                            name: 'นาย อำนาจ กล้าหาญ', id: '3-3001-08912-33-1', hn: '6701-3112', dob: '20 พ.ย. 2533 (อายุ 35 ปี)',
+                            phone: '086-555-1122', gender: 'ชาย', address: '88 หมู่ 9 ต.สุรนารี อ.เมือง จ.นครราชสีมา 30000',
+                            vn: 'VN-691031-0144', dept: 'คลินิกเวชศาสตร์ฟื้นฟู',
+                            rightName: 'ประกันสังคม - รพ.มหาราชนครราชสีมา', hosp: 'โรงพยาบาลมหาราชนครราชสีมา (รหัส 10668)',
+                            cc: 'กายภาพบำบัดอาการปวดหลัง', queue: 'A-022', location: 'แผนกเวชศาสตร์ฟื้นฟู ชั้น 1'
+                        }, this)" class="reg-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-slate-900">A-022 น.ส. พ***</span>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-medium">✓ สำเร็จ</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500">VN-691031-0139 · 08:27 น.</p>
+                        </div>
+
+                        <!-- Recent 4 -->
+                        <div onclick="selectPatient({
+                            name: 'ด.ช. ธนร รักชาติ', id: '1-3055-99882-10-2', hn: '6701-4050', dob: '10 ม.ค. 2559 (อายุ 10 ปี)',
+                            phone: '082-333-4455', gender: 'ชาย', address: '12/5 ถ.จอมสุรางค์ยยาตร์ ต.ในเมือง อ.เมือง จ.นครราชสีมา',
+                            vn: 'VN-691031-0145', dept: 'คลินิกกุมารเวชกรรม',
+                            rightName: 'หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)', hosp: 'โรงพยาบาลมหาราชนครราชสีมา (รหัส 10668)',
+                            cc: 'ไข้หวัด ไอ เจ็บคอ', queue: 'B-022', location: 'แผนกผู้ป่วยเด็ก ชั้น 1'
+                        }, this)" class="reg-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-slate-900">B-022 นาย ก***</span>
+                                <span class="text-[9px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-medium">✓ สำเร็จ</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500">VN-691031-0138 · 08:26 น.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-[9px] text-slate-400 pt-1 border-t border-slate-100 shrink-0">
+                    🔒 ข้อมูลตัวอย่าง · ปกปิดชื่อผู้ป่วย
+                </div>
+            </aside>
+
+            <!-- Column 2: Patient Master Record & Rights Verification (Span 5) -->
+            <div class="col-span-5 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Patient Master Record Form -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>📋</span> ข้อมูลทะเบียนผู้ป่วย <span class="text-[9px] text-slate-400 font-normal">Patient Master Record</span>
+                        </h3>
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                            <span>✓</span> ยืนยันข้อมูลผ่าน DOPA ทะเบียนราษฎร์ สำเร็จ
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">เลขบัตรประชาชน</label>
+                            <input id="input-id" type="text" value="1-3099-00123-45-6" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">รหัสประจำตัวผู้ป่วย (HN)</label>
+                            <input id="input-hn" type="text" value="6701-2345" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold text-emerald-800">
+                        </div>
+                    </div>
+                    <div class="text-[9px] text-emerald-600 font-medium">ผู้ป่วยเก่ามีประวัติในระบบ</div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">คำนำหน้า & ชื่อ-สกุล</label>
+                            <input id="input-name" type="text" value="นาย สมชาย ใจดี" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">วันเกิด & อายุ</label>
+                            <input id="input-dob" type="text" value="15 มี.ค. 2523 (อายุ 46 ปี)" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">เบอร์โทรศัพท์</label>
+                            <input id="input-phone" type="text" value="081-234-5678" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-500 mb-0.5">เพศ</label>
+                            <input id="input-gender" type="text" value="ชาย" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-0.5">ที่อยู่</label>
+                        <input id="input-address" type="text" value="123 หมู่ 4 ต.ในเมือง อ.เมือง จ.นครราชสีมา 30000" class="w-full px-2 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-0.5">ประวัติการแพ้</label>
+                        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium">
+                            <span>🛡️</span> ปฏิเสธประวัติแพ้ยาและสารเคมี
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NHSO / Payer Eligibility Check -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>🛡️</span> การตรวจสอบสิทธิการรักษาพยาบาล <span class="text-[9px] text-slate-400 font-normal">NHSO / Payer Eligibility</span>
+                        </h3>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 space-y-1.5 text-xs shadow-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">สิทธิหลัก</span>
+                            <span id="right-name" class="font-bold text-emerald-800">หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">สถานะสิทธิ</span>
+                            <span class="font-bold text-emerald-600 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> มีสิทธิใช้งานได้ (Active)
+                            </span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">หน่วยบริการประจำ (Main Hospital)</span>
+                            <span id="right-hosp" class="font-medium text-slate-800">โรงพยาบาลมหาราชนครราชสีมา (รหัส 10668)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">เงื่อนไขพิเศษ</span>
+                            <span class="text-slate-700">ครอบคลุมค่ารักษาพื้นฐานตามเกณฑ์ สปสช. (ไม่ต้องชำระเงินต้นทาง)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Column 3: Open Visit & Digital Queue Slip Preview (Span 4) -->
+            <div class="col-span-4 bg-white border border-slate-200 rounded-xl p-3 flex flex-col overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Open Visit - VN Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>🏥</span> เปิดการรับบริการประจำวัน <span class="text-[9px] text-slate-400 font-normal">Open Visit - VN</span>
+                        </h3>
+                        <span class="text-[9px] text-slate-500 font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">VN อัตโนมัติ · ยังไม่ยืนยัน</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-white border border-slate-200 px-3 py-2 rounded-lg">
+                        <span class="text-xs text-slate-500">VN ประจำตัวผู้ป่วย</span>
+                        <span id="vn-code" class="text-sm font-extrabold font-mono text-emerald-700">VN-691031-0142</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">คลินิกที่ส่งไป</label>
+                        <select class="w-full text-xs p-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800">
+                            <option>จุดคัดกรองพยาบาล (Station 02) / แผนกผู้ป่วยนอก OPD</option>
+                            <option>คลินิกโรคเรื้อรัง (NCDs)</option>
+                            <option>คลินิกอายุรกรรมทั่วไป</option>
+                            <option>คลินิกเวชศาสตร์ฟื้นฟู</option>
+                        </select>
+                    </div>
+                    <!-- Quick Clickable Tags (คลิกเพื่อเปลี่ยนคลินิกและอาการสำคัญได้ทันที) -->
+                    <div class="flex flex-wrap gap-1 pt-1">
+                        <span onclick="setDeptAndCC('จุดคัดกรองพยาบาล (Station 02) / แผนกผู้ป่วยนอก OPD', 'ตรวจตามนัดคลินิกโรคทั่วไป')" class="tag-btn bg-emerald-50 text-emerald-700 text-[10px] px-2 py-1 rounded border border-emerald-200 cursor-pointer font-medium hover:bg-emerald-100 transition">+ ตรวจตามนัด</span>
+                        <span onclick="setDeptAndCC('จุดคัดกรองพยาบาล (Station 02) / แผนกผู้ป่วยนอก OPD', 'มีไข้ เจ็บคอ 2 วัน มาขอยาตรวจรักษา')" class="tag-btn bg-white text-slate-700 text-[10px] px-2 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-100 transition">+ มีไข้/เจ็บคอ</span>
+                        <span onclick="setDeptAndCC('คลินิกโรคเรื้อรัง (NCDs)', 'มารับยาเดิมตามนัด NCDs โรคความดันโลหิตสูง')" class="tag-btn bg-white text-slate-700 text-[10px] px-2 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-100 transition">+ รับยาเดิม NCDs</span>
+                        <span onclick="setDeptAndCC('คลินิกอายุรกรรมทั่วไป', 'ส่งตัวจาก รพช. มารับการวินิจฉัยต่อเนื่อง')" class="tag-btn bg-white text-slate-700 text-[10px] px-2 py-1 rounded border border-slate-200 cursor-pointer hover:bg-slate-100 transition">+ ส่งตัวจาก รพช.</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-0.5">อาการสำคัญ (Chief Complaint)</label>
+                        <input id="input-cc" type="text" value="มีไข้ เจ็บคอ 2 วัน มาขอยาตรวจรักษา" class="w-full px-2.5 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-800">
+                    </div>
+                </div>
+
+                <!-- Digital Queue Slip Preview -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <span>📄</span> พรีวิวบัตรคิวและใบนำทาง <span class="text-[9px] text-slate-400 font-normal">Digital Queue Slip Preview</span>
+                            </h3>
+                            <span class="text-[9px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-bold">ยังไม่ออกบัตรคิว</span>
+                        </div>
+
+                        <!-- Ticket Card Simulation -->
+                        <div class="border border-slate-300 bg-white rounded-xl p-3 relative shadow-sm">
+                            <div class="flex justify-between items-start border-b border-slate-100 pb-2 mb-2">
+                                <div class="flex items-start gap-2">
+                                    <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                                    <div>
+                                        <div class="font-bold text-slate-800 text-xs">โรงพยาบาลมหาราชนครราชสีมา</div>
+                                        <div class="text-[9px] text-slate-500">หมายเลขคิวแรกรับ</div>
+                                    </div>
+                                </div>
+                                <div class="bg-emerald-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
+                                    ใบนำทาง OPD
+                                </div>
+                            </div>
+
+                            <div class="my-2">
+                                <div id="slip-queue" class="text-3xl font-extrabold text-emerald-700 tracking-tight">คิว B-024</div>
+                                <div class="text-[10px] text-slate-500 mt-1">คลินิกปลายทาง</div>
+                                <div id="slip-location" class="text-xs font-bold text-slate-800">จุดคัดกรองพยาบาล OPD อาคาร 1 ชั้น 1</div>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2 border-t border-slate-100 mt-2">
+                                <div class="text-[9px] text-slate-500">
+                                    QR Code สำหรับแอป MNRH Connect<br><span class="text-[8px] text-slate-400">ไม่ใช้สิทธิ์ใช้งานจริง</span>
+                                </div>
+                                <div class="w-24 h-24 bg-slate-900 text-white flex flex-col items-center justify-center font-mono rounded shadow-inner p-1">
+                                    <span class="text-[8px] font-bold tracking-widest">[QR]</span>
+                                    <span class="text-[5px] text-slate-400">SCAN ME</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-[9px] text-slate-500 flex items-center gap-1">
+                            <span>ℹ️</span> ตรวจสอบสิทธิและข้อมูลครบถ้วนก่อนกดบันทึก
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Action Footer -->
+    <footer class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 z-40 shadow-lg">
+        <div class="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+            <span>🔒</span> ข้อมูลผู้ป่วยเป็นความลับ · สำหรับบุคลากรที่ได้รับอนุญาตเท่านั้น
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400">MNRH Smart HIS · Medical Records & Registration</span>
+            <button class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-6 py-2.5 rounded-lg flex items-center gap-2 transition shadow-md">
+                <span>🖨️</span> ยืนยันลงทะเบียนและพิมพ์ใบนำทาง
+            </button>
+        </div>
+    </footer>
+
+    <!-- JavaScript สำหรับคลิกเลือกผู้ป่วยเพื่อสลับข้อมูลแบบเรียลไทม์ -->
+    <script>
+        function selectPatient(data, element) {
+            document.getElementById('input-id').value = data.id;
+            document.getElementById('input-hn').value = data.hn;
+            document.getElementById('input-name').value = data.name;
+            document.getElementById('input-dob').value = data.dob;
+            document.getElementById('input-phone').value = data.phone;
+            document.getElementById('input-gender').value = data.gender;
+            document.getElementById('input-address').value = data.address;
+
+            document.getElementById('right-name').innerText = data.rightName;
+            document.getElementById('right-hosp').innerText = data.hosp;
+
+            document.getElementById('vn-code').innerText = data.vn;
+            document.getElementById('input-cc').value = data.cc;
+
+            document.getElementById('slip-queue').innerText = `คิว ${data.queue}`;
+            document.getElementById('slip-location').innerText = data.location;
+
+            // สลับสถานะไฮไลท์การ์ด
+            const cards = document.querySelectorAll('.reg-card');
+            cards.forEach(card => {
+                card.className = "reg-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition";
+            });
+            element.className = "reg-card border-2 border-emerald-500 bg-emerald-50/40 rounded-xl p-2.5 cursor-pointer transition shadow-sm";
+        }
+    </script>
+    <!-- Script สำหรับสั่งการเปลี่ยนหน้าตามแผนก -->
+    <script>
+        function goToDept(dept) {
+            // สามารถเปลี่ยนชื่อไฟล์ปลายทางด้านล่างนี้ให้ตรงกับชื่อไฟล์ HTML จริงของแต่ละแผนกที่คุณสร้างไว้ได้เลยครับ
+            const routes = {
+                'login': 'index.html',
+                
+            };
+
+            if (routes[dept]) {
+                window.location.href = routes[dept];
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNRH Smart HIS - จุดปฏิบัติการเทคนิคการแพทย์และรายงานผลแลป</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Thai', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- ========================================== -->
+    <!-- หน้าจอที่ 1: หน้าจอเข้าสู่ระบบ (Login Screen) -->
+    <!-- ========================================== -->
+    <div id="login-screen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-200">
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 bg-emerald-700 text-white rounded-2xl flex items-center justify-center mx-auto shadow-lg text-2xl font-bold">
+                    🏥
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">MNRH Smart HIS</h2>
+                <p class="text-xs text-slate-500">ระบบสารสนเทศโรงพยาบาลอัจฉริยะ · โรงพยาบาลมหาราชนครราชสีมา</p>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">ชื่อผู้ใช้งานระบบ (Username)</label>
+                    <input type="text" value="napatsorn.med" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">รหัสผ่าน (Password)</label>
+                    <input type="password" value="********" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500 font-mono">
+                </div>
+                <div>
+                    <label class="block font-medium text-slate-700 mb-1">เลือกจุดปฏิบัติงาน (Station)</label>
+                    <select class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500 font-medium">
+                        <option>ห้องปฏิบัติการกลาง (Central Lab - Station 01)</option>
+                        <option>จุดลงทะเบียนเวชระเบียน (Registration)</option>
+                        <option>จุดคัดกรองพยาบาล (OPD Triage)</option>
+                        <option>ห้องจ่ายยาผู้ป่วยนอก (Pharmacy)</option>
+                        <option>จุดรับชำระเงิน (Cashier)</option>
+                    </select>
+                </div>
+
+                <button onclick="handleLogin()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-md">
+                    เข้าสู่ระบบ (Login)
+                </button>
+            </div>
+
+            <div class="text-center text-[10px] text-slate-400 pt-2 border-t border-slate-100">
+                🔒 สำหรับบุคลากรทางการแพทย์และเจ้าหน้าที่โรงพยาบาลเท่านั้น
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- หน้าจอหลักของระบบ (Main Workspace) -->
+    <!-- ========================================== -->
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                <div>
+                    <h1 class="font-bold text-emerald-800 text-base leading-tight">MNRH Smart HIS</h1>
+                    <select class="text-xs text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer font-medium">
+                        <option>ห้องปฏิบัติการกลาง (Central Lab - Station 01)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" placeholder="ค้นหาด้วย Lab Barcode, HN, หรือเลขที่ใบสั่งแลป... (Ctrl+K)" class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs">
+            <span class="flex items-center text-emerald-600 font-medium bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200"><span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1.5 animate-pulse"></span> เครื่องวิเคราะห์อัตโนมัติออนไลน์</span>
+            <div class="relative cursor-pointer text-slate-600">🔔</div>
+            <div class="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg text-emerald-900 font-medium leading-tight">
+                ทนพญ. นภัสสร <br><span class="text-[10px] text-slate-500 font-normal">นักเทคนิคการแพทย์</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-600 pl-2 border-l border-slate-200">
+                09:05 น.
+            </div>
+
+            <!-- ปุ่มออกจากระบบ (Logout Button อยู่มุมบนขวา) -->
+            <button onclick="goToDept('login')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 transition shadow-sm cursor-pointer" title="ออกจากระบบ">
+                <span>🚪</span> ออกจากระบบ
+            </button>
+        </div>
+    </header>
+
+    <!-- Sub Header Patient Info & Tube Status -->
+    <section class="bg-white border-b border-slate-200 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full border-2 border-emerald-500 flex items-center justify-center bg-slate-50 text-emerald-600 text-xs font-bold">
+                👤
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h2 id="patient-name" class="font-bold text-xs text-slate-900">นาย สมชาย ใจดี (อายุ 46 ปี)</h2>
+                    <span id="patient-queue-badge" class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-1.5 py-0.5 rounded">คิว B-024</span>
+                </div>
+                <p id="patient-meta" class="text-[9px] text-slate-500 mt-0.5">HN: 6701-2345 | VN: VN-691031-0142</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div class="text-xs font-bold text-slate-800">หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)</div>
+                <div class="text-[9px] text-slate-500">· รพ.มหาราชนครราชสีมา</div>
+            </div>
+            <button class="border border-emerald-600 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 text-[11px] font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                <span>✓</span> ได้รับส่งตรวจแล้ว (EDTA Blood & Serum Tubes)
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Workspace (3 Columns Layout) -->
+    <main class="flex-1 flex flex-col overflow-hidden p-3 gap-2">
+        
+        <!-- หัวข้อหน้าจอหลัก -->
+        <div class="flex justify-between items-center px-1 shrink-0">
+            <div class="text-xs font-bold text-slate-700">
+                จุดปฏิบัติการเทคนิคการแพทย์และรายงานผลแลป <span class="text-[11px] font-normal text-slate-400">/ Laboratory & Specimen Analysis Station</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-600 flex items-center gap-2">
+                <span>LAB-691031-0038</span>
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">กำลังตรวจวิเคราะห์</span>
+            </div>
+        </div>
+
+        <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden">
+            
+            <!-- Column 1: Lab Queue List (Span 3) -->
+            <aside class="col-span-3 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden shadow-sm p-3 gap-2">
+                <div class="flex items-center justify-between text-xs shrink-0 pb-2 border-b border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-800">คิวสั่งตรวจห้องปฏิบัติการ</span>
+                        <p class="text-[9px] text-slate-400">Lab Queue</p>
+                    </div>
+                    <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">รอตรวจ 4 รายการ</span>
+                </div>
+
+                <!-- Queue List -->
+                <div class="flex-1 overflow-y-auto space-y-2 text-xs pr-1">
+                    
+                    <!-- Queue 1: สมชาย -->
+                    <div onclick="selectPatient({
+                        queue: 'B-024', name: 'นาย สมชาย ใจดี', age: '46 ปี', hn: '6701-2345', vn: 'VN-691031-0142',
+                        doctor: 'พญ. พิมลดา รักษาดี (ห้องตรวจ 04 อายุรกรรม)', orderText: 'ตรวจคัดกรองเบาหวานและภาวะติดเชื้อทางเดินหายใจ (ICD-10: J00)',
+                        time: '31/10/2569 เวลา 08:55 น. โดย พยาบาลคัดกรอง', barcode: 'SPEC-91031-102',
+                        tests: [
+                            {name: 'Fasting Blood Sugar (FBS)', res: '98 mg/dL', ref: '70 - 99 mg/dL', flag: 'Normal', machine: 'Auto-verified'},
+                            {name: 'Complete Blood Count (CBC) - Hb', res: '14.2 g/dL', ref: '13.0 - 17.5 g/dL', flag: 'Normal', machine: 'Auto-verified'},
+                            {name: 'CBC - White Blood Cell (WBC)', res: '8,500 /uL', ref: '4,500 - 10,000 /uL', flag: 'Normal', machine: 'Auto-verified'},
+                            {name: 'CBC - Platelet Count', res: '250,000 /uL', ref: '150,000 - 450,000 /uL', flag: 'Normal', machine: 'Auto-verified'}
+                        ]
+                    }, this)" class="queue-card border-2 border-emerald-500 bg-emerald-50/30 rounded-xl p-2.5 shadow-sm cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-emerald-700 text-sm">คิว B-024</span>
+                            <span class="text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">✓</span>
+                        </div>
+                        <p class="font-bold text-xs text-slate-900">นาย สมชาย ใจดี</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">ห้องตรวจ 04 อายุรกรรม (พญ. พิมลดา)</p>
+                        <p class="text-[10px] text-slate-600 font-medium mt-0.5">ใบสั่งแลป: LAB-691031-0038 (CBC, FBS)</p>
+                        <div class="my-1.5 bg-white p-1 rounded border border-slate-200 text-center font-mono text-[9px] text-slate-600">
+                            |||||||||||||||||||||||||||<br>SPEC-91031-102
+                        </div>
+                        <div class="text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                            <span>⚡</span> กำลังตรวจวิเคราะห์
+                        </div>
+                    </div>
+
+                    <!-- Queue 2: วิภาวรรณ -->
+                    <div onclick="selectPatient({
+                        queue: 'B-025', name: 'นาง วิภาวรรณ รุ่งเรือง', age: '52 ปี', hn: '6701-2980', vn: 'VN-691031-0150',
+                        doctor: 'นพ. สมบัติ สุขสันต์ (ห้องตรวจ 02 อายุรกรรม)', orderText: 'ตรวจติดตามระดับน้ำตาลและไขมันในเลือด (NCDs Follow-up)',
+                        time: '31/10/2569 เวลา 09:02 น.', barcode: 'SPEC-91031-103',
+                        tests: [
+                            {name: 'Fasting Blood Sugar (FBS)', res: '-', ref: '70 - 99 mg/dL', flag: 'Pending', machine: '-'}
+                        ]
+                    }, this)" class="queue-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span class="font-bold text-slate-800 text-xs">คิว B-025</span>
+                            <span class="text-[9px] text-slate-400">(รอเก็บสิ่งส่งตรวจ)</span>
+                        </div>
+                        <p class="font-bold text-xs text-slate-900">นาง วิภาวรรณ รุ่งเรือง</p>
+                        <p class="text-[10px] text-slate-500">รอเก็บสิ่งส่งตรวจ</p>
+                    </div>
+
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 shrink-0">
+                    ... แสดงรายการคิวแลปทั้งหมด
+                </div>
+            </aside>
+
+            <!-- Column 2: Order Context & Lab Test Results Table (Span 5) -->
+            <div class="col-span-5 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Order Context Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>📋</span> ข้อมูลการสั่งตรวจทางห้องปฏิบัติการ <span class="text-[9px] text-slate-400 font-normal">Order Context</span>
+                        </h3>
+                    </div>
+                    <div id="order-doctor" class="text-xs font-bold text-slate-900 mt-1">
+                        พญ. พิมลดา รักษาดี (ห้องตรวจ 04 อายุรกรรม)
+                    </div>
+                    <div id="order-text" class="text-[11px] text-slate-700 mt-0.5 font-medium">
+                        ตรวจคัดกรองเบาหวานและภาวะติดเชื้อทางเดินหายใจ (ICD-10: J00)
+                    </div>
+                    <div id="order-time" class="text-[10px] text-slate-500 mt-1 border-t border-slate-200 pt-1">
+                        31/10/2569 เวลา 08:55 น. โดย พยาบาลคัดกรอง
+                    </div>
+                </div>
+
+                <!-- Lab Test Results Table -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>🔬</span> ผลการตรวจวิเคราะห์ทางห้องปฏิบัติการ <span class="text-[9px] text-slate-400 font-normal">Lab Test Results</span>
+                        </h3>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-white text-xs">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-[10px] text-slate-600 border-b border-slate-200">
+                                    <th class="p-2">รายการตรวจ (Test Name)</th>
+                                    <th class="p-2">ค่าที่ตรวจได้ (Result)</th>
+                                    <th class="p-2">ค่าอ้างอิง (Reference Range)</th>
+                                    <th class="p-2">การแปลผล (Flag)</th>
+                                    <th class="p-2">สถานะเครื่องวิเคราะห์</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lab-table-body" class="divide-y divide-slate-100 text-[11px]">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-2 font-medium text-slate-800">Fasting Blood Sugar (FBS)</td>
+                                    <td class="p-2 font-bold text-slate-900">98 mg/dL</td>
+                                    <td class="p-2 text-slate-500">70 - 99 mg/dL</td>
+                                    <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Normal</span></td>
+                                    <td class="p-2 text-slate-500 text-[10px]">Auto-verified</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 bg-emerald-50/20">
+                                    <td class="p-2 font-medium text-slate-800">Complete Blood Count (CBC) - Hb</td>
+                                    <td class="p-2 font-bold text-slate-900">14.2 g/dL</td>
+                                    <td class="p-2 text-slate-500">13.0 - 17.5 g/dL</td>
+                                    <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Normal</span></td>
+                                    <td class="p-2 text-slate-500 text-[10px]">Auto-verified</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Alert Banner -->
+                    <div class="mt-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3 py-2 rounded-xl flex items-center gap-2 font-medium">
+                        <span>✓</span> ผลการตรวจวิเคราะห์ผู้อยู่ในเกณฑ์มาตรฐาน ไม่พบค่าวิกฤต (No Critical Alert)
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Column 3: Tube Verification & e-Lab Report Preview (Span 4) -->
+            <div class="col-span-4 bg-white border border-slate-200 rounded-xl p-3 flex flex-col overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Tube Verification Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>🏷️</span> ตรวจสอบบาร์โค้ดหลอดเลือด <span class="text-[9px] text-slate-400 font-normal">Tube Verification</span>
+                        </h3>
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" placeholder="สแกนบาร์โค้ดคำสั่งตรวจ..." class="w-full px-3 py-2 bg-white border-2 border-emerald-500 rounded-lg text-xs font-mono focus:outline-none">
+                    </div>
+
+                    <div class="space-y-1.5 text-xs pt-1">
+                        <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-200">
+                            <span class="flex items-center gap-1.5">🟣 EDTA Tube (จุกม่วง)</span>
+                            <span class="text-emerald-700 font-bold text-[10px]">✓ สแกนถูกต้อง</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-200">
+                            <span class="flex items-center gap-1.5">🔴 Clot Blood (จุกแดง)</span>
+                            <span class="text-emerald-700 font-bold text-[10px]">✓ สแกนถูกต้อง</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- e-Lab Report Preview Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <span>📄</span> พรีวิวใบรายงานผลแลปอิเล็กทรอนิกส์ <span class="text-[9px] text-slate-400 font-normal">e-Lab Report Preview</span>
+                            </h3>
+                        </div>
+                        <div class="bg-amber-50 border border-amber-200 text-amber-800 text-[9px] px-2 py-1 rounded mb-2 font-medium">
+                            ⚠️ ตัวอย่างเท่านั้น · รออนุมัติโดยผู้ตรวจ / ยังไม่ส่งผล
+                        </div>
+
+                        <!-- Report Preview Simulation Card -->
+                        <div class="border border-slate-300 bg-white rounded-xl p-3 relative shadow-sm text-xs space-y-2">
+                            <div class="text-center border-b border-slate-100 pb-2">
+                                <div class="font-bold text-slate-900 text-xs">โรงพยาบาลมหาราชนครราชสีมา (กลุ่มงานเทคนิคการแพทย์)</div>
+                                <div class="text-[9px] text-slate-500">ใบรายงานผลการตรวจวิเคราะห์ทางห้องปฏิบัติการ</div>
+                            </div>
+                            <div class="text-[9px] text-slate-600 space-y-0.5">
+                                <p id="report-meta">HN: 6701-2345 | นาย สมชาย ใจดี | วันที่ 31 ต.ค. 2569</p>
+                                <p class="text-slate-500 text-[8px]">ข้อความรับรองในเอกสารตัวอย่าง: ผลการตรวจผ่านการรับรองมาตรฐานทางเทคนิคการแพทย์</p>
+                            </div>
+                            <div class="text-[9px] text-slate-700 pt-1 border-t border-slate-100">
+                                ผู้ตรวจวิเคราะห์: ทนพญ. นภัสสร สุขสมบูรณ์ (ทน. 8921)
+                            </div>
+                            <div class="bg-slate-100 text-slate-600 font-bold text-[9px] p-1.5 rounded text-center border border-slate-200">
+                                PREVIEW · รอ Approve & Send ก่อนส่งให้แพทย์
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-[9px] text-slate-500 flex items-center gap-1">
+                            <span>ℹ️</span> ตรวจสอบผลตรวจให้ถูกต้องก่อนกดยืนยันอนุมัติ
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Action Footer -->
+    <footer class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 z-40 shadow-lg">
+        <div class="flex items-center gap-2 text-xs font-medium text-slate-700">
+            <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded border-slate-300">
+            <span>ส่งแจ้งเตือนผลแลปด่วนเข้าหน้าจอแพทย์ห้องตรวจ 04</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1 transition">
+                <span>⚠️</span> ปฏิเสธสิ่งส่งตรวจ (Reject Specimen)
+            </button>
+            <button class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-6 py-2.5 rounded-lg flex items-center gap-2 transition shadow-md">
+                <span>✅</span> อนุมัติและส่งผลแลปให้แพทย์ (Approve & Send - F9)
+            </button>
+        </div>
+    </footer>
+
+    <!-- JavaScript สำหรับควบคุมการออกจากระบบและสลับผู้ป่วย -->
+    <script>
+        function handleLogout() {
+            // แสดงหน้าจอ Login
+            document.getElementById('login-screen').classList.remove('hidden');
+        }
+
+        function handleLogin() {
+            // ซ่อนหน้าจอ Login กลับเข้าสู่หน้าจอหลัก
+            document.getElementById('login-screen').classList.add('hidden');
+        }
+
+        function selectPatient(data, element) {
+            document.getElementById('patient-name').innerText = `${data.name} (อายุ ${data.age})`;
+            document.getElementById('patient-queue-badge').innerText = `คิว ${data.queue}`;
+            document.getElementById('patient-meta').innerText = `HN: ${data.hn} | VN: ${data.vn}`;
+
+            document.getElementById('order-doctor').innerText = data.doctor;
+            document.getElementById('order-text').innerText = data.orderText;
+            document.getElementById('order-time').innerText = data.time;
+
+            const tbody = document.getElementById('lab-table-body');
+            tbody.innerHTML = '';
+            data.tests.forEach((test, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 1 ? "hover:bg-slate-50 bg-emerald-50/20" : "hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2 font-medium text-slate-800">${test.name}</td>
+                    <td class="p-2 font-bold text-slate-900">${test.res}</td>
+                    <td class="p-2 text-slate-500">${test.ref}</td>
+                    <td class="p-2"><span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold">${test.flag}</span></td>
+                    <td class="p-2 text-slate-500 text-[10px]">${test.machine}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('report-meta').innerText = `HN: ${data.hn} | ${data.name} | วันที่ 31 ต.ค. 2569`;
+
+            const cards = document.querySelectorAll('.queue-card');
+            cards.forEach(card => {
+                card.className = "queue-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition";
+            });
+            element.className = "queue-card border-2 border-emerald-500 bg-emerald-50/30 rounded-xl p-2.5 shadow-sm cursor-pointer transition";
+        }
+    </script>
+    <script>
+        function goToDept(dept) {
+            // สามารถเปลี่ยนชื่อไฟล์ปลายทางด้านล่างนี้ให้ตรงกับชื่อไฟล์ HTML จริงของแต่ละแผนกที่คุณสร้างไว้ได้เลยครับ
+            const routes = {
+                'login': 'index.html',
+                
+            };
+
+            if (routes[dept]) {
+                window.location.href = routes[dept];
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNRH Smart HIS - จุดรับชำระเงินและออกใบเสร็จรับเงิน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans Thai', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                <div>
+                    <h1 class="font-bold text-emerald-800 text-base leading-tight">MNRH Smart HIS</h1>
+                    <select class="text-xs text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer font-medium">
+                        <option>ห้องการเงินและรับชำระเงินผู้ป่วยนอกจาก (Cashier Counter 02)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" placeholder="ค้นหาด้วย HN, เลขที่ใบแจ้งหนี้ Inv, หรือชื่อ-สกุล... (Ctrl+K)" class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs">
+            <span class="flex items-center text-emerald-600 font-medium bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200"><span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1.5 animate-pulse"></span> ระบบสิทธิ สปสช. & e-Payment ออนไลน์</span>
+            <div class="relative cursor-pointer text-slate-600">🔔</div>
+            <div class="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg text-emerald-900 font-medium leading-tight">
+                นาย อานนท์ <br><span class="text-[10px] text-slate-500 font-normal">การเงินชำนาญการ</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-600 pl-2 border-l border-slate-200">
+                09:20 น.
+            </div>
+            <!-- ปุ่มออกจากระบบ (Logout Button อยู่มุมบนขวา) -->
+            <button onclick="goToDept('login')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 transition shadow-sm cursor-pointer" title="ออกจากระบบ">
+                <span>🚪</span> ออกจากระบบ
+            </button>
+        </div>
+    </header>
+
+    <!-- Sub Header Patient Info & Rights -->
+    <section class="bg-white border-b border-slate-200 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full border-2 border-emerald-500 flex items-center justify-center bg-slate-50 text-emerald-600 text-xs font-bold">
+                👤
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h2 id="patient-name" class="font-bold text-xs text-slate-900">นาย สมชาย ใจดี (อายุ 46 ปี)</h2>
+                    <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold px-1.5 py-0.5 rounded">คิว B-024</span>
+                </div>
+                <p id="patient-meta" class="text-[9px] text-slate-500 mt-0.5">HN: 6701-2345 | VN: VN-691031-0142</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div id="patient-rights" class="text-xs font-bold text-slate-800">หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)</div>
+                <div class="text-[9px] text-slate-500">· รพ.มหาราชนครราชสีมา</div>
+            </div>
+            <button class="border border-emerald-600 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 text-[11px] font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition">
+                <span>✓</span> ตรวจสอบสิทธิผ่านระบบ สปสช. แล้ว (ครอบคลุมการรักษา)
+            </button>
+        </div>
+    </section>
+
+    <!-- Main Workspace (3 Columns Layout) -->
+    <main class="flex-1 flex flex-col overflow-hidden p-3 gap-2">
+        
+        <!-- หัวข้อหน้าจอหลัก -->
+        <div class="flex justify-between items-center px-1 shrink-0">
+            <div class="text-xs font-bold text-slate-700">
+                จุดรับชำระเงินและออกใบเสร็จรับเงิน <span class="text-[11px] font-normal text-slate-400">/ Cashier, Billing & e-Receipt Station</span>
+            </div>
+            <div class="text-xs font-semibold text-slate-600 flex items-center gap-2">
+                <span>INV-691031-0064</span>
+                <span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded font-bold">รอรับชำระ</span>
+            </div>
+        </div>
+
+        <div class="flex-1 grid grid-cols-12 gap-3 overflow-hidden">
+            
+            <!-- Column 1: Billing Queue List (Span 3) -->
+            <aside class="col-span-3 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden shadow-sm p-3 gap-2">
+                <div class="flex items-center justify-between text-xs shrink-0 pb-2 border-b border-slate-100">
+                    <div>
+                        <span class="font-bold text-slate-800">คิวรอชำระเงิน</span>
+                        <p class="text-[9px] text-slate-400">Billing Queue</p>
+                    </div>
+                    <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-bold">รอ 5 คิว</span>
+                </div>
+
+                <!-- Queue List -->
+                <div class="flex-1 overflow-y-auto space-y-2 text-xs pr-1">
+                    
+                    <!-- Queue 1: สมชาย -->
+                    <div onclick="selectPatient({
+                        queue: 'B-024', name: 'นาย สมชาย ใจดี', age: '46 ปี', hn: '6701-2345', vn: 'VN-691031-0142',
+                        rights: 'หลักประกันสุขภาพแห่งชาติ (บัตรทอง 30 บาท)', inv: 'INV-691031-0064',
+                        doctor: 'พญ. พิมลดา รักษาดี (ห้องตรวจ 04 อายุรกรรม / รับยาแล้ว)', rx: 'Rx-691031-0089 · ยา 3 รายการ - จ่ายยาเสร็จสิ้น',
+                        items: [
+                            {no: '1.', name: 'ค่าบริการทางการแพทย์และตรวจรักษา OPD', price: '100.00', sub: '100.00', unpay: '0.00', self: '0.00'},
+                            {no: '2.', name: 'Paracetamol 500 mg tab (15 เม็ด)', price: '30.00', sub: '30.00', unpay: '0.00', self: '0.00'},
+                            {no: '3.', name: 'Amoxicillin 500 mg cap (20 แคปซูล)', price: '120.00', sub: '120.00', unpay: '0.00', self: '0.00'},
+                            {no: '4.', name: 'Chlorpheniramine 4 mg tab (10 เม็ด)', price: '30.00', sub: '30.00', unpay: '0.00', self: '0.00'}
+                        ],
+                        total: '280.00 บาท', cover: '-250.00 บาท', coPay: '30.00 บาท', net: 30.00
+                    }, this)" class="queue-card border-2 border-emerald-500 bg-emerald-50/30 rounded-xl p-2.5 shadow-sm cursor-pointer transition">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-emerald-700 text-sm">B-024</span>
+                            <span class="text-[9px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">✓</span>
+                        </div>
+                        <p class="font-bold text-xs text-slate-900">นาย สมชาย ใจดี</p>
+                        <p class="text-[10px] text-slate-500 mt-0.5">ห้องตรวจ 04 อายุรกรรม / รับยาแล้ว</p>
+                        <p class="text-[10px] text-slate-600 font-medium mt-0.5">ใบแจ้งหนี้: INV-691031-0064</p>
+                        <div class="mt-1 text-[10px] text-amber-700 font-semibold flex items-center gap-1">
+                            <span>⏱️</span> รอปิดยอดชำระ
+                        </div>
+                    </div>
+
+                    <!-- Queue 2: วิภาวรรณ -->
+                    <div onclick="selectPatient({
+                        queue: 'B-025', name: 'นาง วิภาวรรณ รุ่งเรือง', age: '52 ปี', hn: '6701-2980', vn: 'VN-691031-0150',
+                        rights: 'ข้าราชการ / เบิกจ่ายตรงกรมบัญชีกลาง', inv: 'INV-691031-0065',
+                        doctor: 'นพ. สมบัติ สุขสันต์ (ห้องตรวจ 02 / รอจ่ายยา)', rx: 'Rx-691031-0090 · ยา 2 รายการ',
+                        items: [
+                            {no: '1.', name: 'ค่าบริการทางการแพทย์ OPD', price: '100.00', sub: '100.00', unpay: '0.00', self: '0.00'},
+                            {no: '2.', name: 'Amlodipine 5 mg tab (30 เม็ด)', price: '90.00', sub: '90.00', unpay: '90.00', self: '0.00'}
+                        ],
+                        total: '190.00 บาท', cover: '-190.00 บาท', coPay: '0.00 บาท', net: 0.00
+                    }, this)" class="queue-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span class="font-bold text-slate-800 text-xs">คิว B-025</span>
+                            <span class="text-[9px] text-slate-400">(รอคิว)</span>
+                        </div>
+                        <p class="font-bold text-xs text-slate-900">นาง วิภาวรรณ รุ่งเรือง</p>
+                        <p class="text-[10px] text-slate-500">บัตรทอง</p>
+                    </div>
+
+                    <!-- Queue 3: อำนาจ -->
+                    <div onclick="selectPatient({
+                        queue: 'A-018', name: 'นาย อำนาจ กล้าหาญ', age: '35 ปี', hn: '6701-3112', vn: 'VN-691031-0165',
+                        rights: 'ประกันสังคม - รพ.มหาราชนครราชสีมา', inv: 'INV-691031-0066',
+                        doctor: 'พญ. นิศา อารีย์ (ห้องตรวจ 08 / รอจ่ายยา)', rx: 'Rx-691031-0091 · ยา 1 รายการ',
+                        items: [
+                            {no: '1.', name: 'Ibuprofen 400 mg tab (15 เม็ด)', price: '45.00', sub: '0.00', unpay: '0.00', self: '45.00'}
+                        ],
+                        total: '45.00 บาท', cover: '0.00 บาท', coPay: '0.00 บาท', net: 45.00
+                    }, this)" class="queue-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span class="font-bold text-slate-800 text-xs">คิว A-018</span>
+                            <span class="text-[9px] text-slate-400">ชำระเงินสด</span>
+                        </div>
+                        <p class="font-bold text-xs text-slate-900">นาย อำนาจ กล้าหาญ</p>
+                        <p class="text-[10px] text-slate-500">ชำระเงินสด</p>
+                    </div>
+
+                </div>
+
+                <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 shrink-0">
+                    ... มีอีก 1 คิวนอกเหนือจากรายการนี้
+                </div>
+            </aside>
+
+            <!-- Column 2: Order Summary & Itemized Bill Breakdown (Span 5) -->
+            <div class="col-span-5 bg-white border border-slate-200 rounded-xl p-4 overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Order Summary Header -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40">
+                    <div class="flex justify-between items-center mb-1">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>📦</span> ข้อมูลใบสั่งยาและบริการทางการแพทย์ <span class="text-[9px] text-slate-400 font-normal">Order Summary</span>
+                        </h3>
+                    </div>
+                    <div id="order-doctor" class="text-xs font-bold text-slate-900 mt-1">
+                        พญ. พิมลดา รักษาดี (ห้องตรวจ 04 อายุรกรรม)
+                    </div>
+                    <div id="order-rx" class="text-[11px] text-slate-600 mt-0.5 font-medium">
+                        Rx-691031-0089 &nbsp;|&nbsp; ยา 3 รายการ - จ่ายยาเสร็จสิ้น
+                    </div>
+                </div>
+
+                <!-- Itemized Bill Breakdown Table -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/40">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>📑</span> รายการค่าใช้จ่ายและสิทธิการรักษา
+                        </h3>
+                        <span class="text-[10px] text-slate-500">หน่วย: บาท (THB)</span>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="border border-slate-200 rounded-lg overflow-hidden bg-white text-xs">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-[10px] text-slate-600 border-b border-slate-200">
+                                    <th class="p-2">รายการ (Item)</th>
+                                    <th class="p-2 text-right">ราคาเดิม</th>
+                                    <th class="p-2 text-right">เบิกได้ (สปสช.)</th>
+                                    <th class="p-2 text-right">เบิกไม่ได้</th>
+                                    <th class="p-2 text-right">ชำระเอง</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bill-table-body" class="divide-y divide-slate-100 text-[11px]">
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-2 text-slate-800">1. ค่าบริการทางการแพทย์และตรวจรักษา OPD</td>
+                                    <td class="p-2 text-right font-medium">100.00</td>
+                                    <td class="p-2 text-right text-emerald-700 font-medium">100.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 bg-emerald-50/20">
+                                    <td class="p-2 text-slate-800">2. Paracetamol 500 mg tab (15 เม็ด)</td>
+                                    <td class="p-2 text-right font-medium">30.00</td>
+                                    <td class="p-2 text-right text-emerald-700 font-medium">30.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-2 text-slate-800">3. Amoxicillin 500 mg cap (20 แคปซูล)</td>
+                                    <td class="p-2 text-right font-medium">120.00</td>
+                                    <td class="p-2 text-right text-emerald-700 font-medium">120.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50">
+                                    <td class="p-2 text-slate-800">4. Chlorpheniramine 4 mg tab (10 เม็ด)</td>
+                                    <td class="p-2 text-right font-medium">30.00</td>
+                                    <td class="p-2 text-right text-emerald-700 font-medium">30.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                    <td class="p-2 text-right text-slate-500">0.00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Summary Totals Box -->
+                    <div class="mt-3 bg-white border border-slate-200 rounded-xl p-3 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>ยอดรวมทั้งหมด:</span>
+                            <span id="sum-total" class="font-bold text-slate-900">280.00 บาท</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-700">
+                            <span>สิทธิบัตรทองคุ้มครอง:</span>
+                            <span id="sum-cover" class="font-medium">-250.00 บาท</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 border-b border-slate-100 pb-1">
+                            <span>ค่าธรรมเนียมร่วมจ่ายตามสิทธิ:</span>
+                            <span id="sum-copay" class="font-medium">30.00 บาท</span>
+                        </div>
+                        <div class="flex justify-between items-center pt-1">
+                            <span class="font-bold text-slate-900 text-sm">ยอดสุทธิที่ต้องชำระ:</span>
+                            <span id="sum-net" class="text-lg font-extrabold text-emerald-700">30.00 บาท</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Column 3: Payment Methods & e-Receipt Preview (Span 4) -->
+            <div class="col-span-4 bg-white border border-slate-200 rounded-xl p-3 flex flex-col overflow-y-auto space-y-3 shadow-sm">
+                
+                <!-- Payment Methods Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                            <span>💳</span> ช่องทางการชำระเงิน <span class="text-[9px] text-slate-400 font-normal">Payment Methods</span>
+                        </h3>
+                    </div>
+
+                    <!-- Payment Tabs (ปรับเหลือ 2 ช่องทาง: QR และ เงินสด ตามที่ขอ) -->
+                    <div class="grid grid-cols-2 gap-1 bg-slate-200 p-0.5 rounded-lg text-center text-xs font-semibold mb-3">
+                        <div id="tab-qr" onclick="switchTab('qr')" class="py-1 rounded-md text-slate-600 cursor-pointer transition">Thai QR / PromptPay</div>
+                        <div id="tab-cash" onclick="switchTab('cash')" class="bg-white py-1 rounded-md shadow-sm text-emerald-800 font-bold cursor-pointer transition">เงินสด</div>
+                    </div>
+
+                    <!-- เนื้อหาเมื่อเลือก: QR PromptPay -->
+                    <div id="content-qr" class="text-center space-y-2 hidden">
+                        <p class="text-[10px] text-slate-600 font-medium">สแกน QR เพื่อชำระเงินผ่าน Mobile Banking</p>
+                        <div class="inline-block bg-white p-2 border border-slate-300 rounded-xl shadow-sm">
+                            <div class="w-28 h-28 bg-slate-900 text-white flex flex-col items-center justify-center font-mono rounded-lg p-1">
+                                <span class="text-xs font-bold tracking-widest">[ THAI QR ]</span>
+                                <span class="text-[7px] text-slate-400 mt-1">PROMPTPAY</span>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-50 border border-emerald-200 py-1 px-3 rounded-lg inline-block">
+                            <span class="text-xs font-bold text-emerald-900">ยอดเงิน <span id="qr-amount">30.00</span> บาท</span>
+                        </div>
+                    </div>
+
+                    <!-- เนื้อหาเมื่อเลือก: เงินสด (ตามแบบภาพตัวอย่าง) -->
+                    <div id="content-cash" class="space-y-2">
+                        <label class="block text-[11px] text-slate-600 font-medium">รับเงินสดมา (บาท):</label>
+                        <input id="input-cash-given" type="number" value="100" oninput="calculateChange()" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-bold text-slate-800 text-right focus:outline-none focus:border-emerald-500 shadow-inner">
+                        
+                        <div class="bg-white border border-slate-200 p-2.5 rounded-xl flex justify-between items-center shadow-sm">
+                            <span class="text-xs text-slate-600 font-medium">เงินทอนที่ต้องคืน:</span>
+                            <span id="change-text" class="text-sm font-extrabold text-emerald-700">70.00 บาท</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- e-Receipt Preview Box -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-slate-50/50 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <span>📄</span> พรีวิวใบเสร็จรับเงินอิเล็กทรอนิกส์ <span class="text-[9px] text-slate-400 font-normal">e-Receipt Preview</span>
+                            </h3>
+                        </div>
+
+                        <!-- Receipt Simulation Card -->
+                        <div class="border border-slate-300 bg-white rounded-xl p-3 relative shadow-sm text-xs space-y-2">
+                            <div class="text-center border-b border-slate-100 pb-2">
+                                <div class="font-bold text-slate-900">โรงพยาบาลมหาราชนครราชสีมา</div>
+                                <div class="text-[9px] text-slate-500">ใบเสร็จรับเงิน / ใบกำกับภาษีย่อ</div>
+                            </div>
+                            <div class="text-[9px] text-slate-600 space-y-0.5">
+                                <p>เลขที่: REC-691031-0042 &nbsp;|&nbsp; วันที่: 31/10/2569 09:21 น.</p>
+                                <p id="receipt-patient">ผู้ป่วย: นาย สมชาย ใจดี (HN: 6701-2345)</p>
+                            </div>
+                            <div class="flex justify-between items-center text-[10px] border-t border-slate-100 pt-1.5">
+                                <span class="text-slate-600">ค่าบริการร่วมจ่ายผู้ป่วยนอก</span>
+                                <span id="receipt-net" class="font-bold text-slate-900">30.00 บาท</span>
+                            </div>
+                            <div id="receipt-status-badge" class="bg-emerald-50 text-emerald-800 font-bold text-[10px] p-1.5 rounded text-center border border-emerald-200">
+                                ชำระด้วยเงินสดรับมา: 100.00 | ทอน: <span id="receipt-change">70.00</span> บาท
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <div class="text-[9px] text-slate-500 flex items-center gap-1">
+                            <span>ℹ️</span> ตรวจสอบยอดเงินและช่องทางชำระก่อนกดยืนยัน
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Action Footer -->
+    <footer class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 z-40 shadow-lg">
+        <div class="flex items-center gap-4 text-xs font-medium">
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-700">
+                <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded border-slate-300">
+                พิมพ์ใบเสร็จลงกระดาษความร้อน
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer text-slate-700">
+                <input type="checkbox" checked class="w-4 h-4 text-emerald-600 rounded border-slate-300">
+                ส่ง e-Receipt เข้า SMS / หมอพร้อม
+            </label>
+        </div>
+        <div class="flex items-center gap-2.5">
+            <button class="border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-lg transition">
+                ยกเลิก / ปรับปรุงยอด
+            </button>
+            <button class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-5 py-2.5 rounded-lg flex items-center gap-2 transition shadow-md">
+                <span>✅</span> ยืนยันรับชำระเงินและออกใบเสร็จ (F9)
+            </button>
+        </div>
+    </footer>
+
+    <!-- JavaScript สำหรับสลับแท็บชำระเงินและคำนวณเงินทอน -->
+    <script>
+        let currentNetPayable = 30.00;
+
+        function switchTab(type) {
+            document.getElementById('tab-qr').className = "py-1 rounded-md text-slate-600 cursor-pointer transition";
+            document.getElementById('tab-cash').className = "py-1 rounded-md text-slate-600 cursor-pointer transition";
+
+            document.getElementById('content-qr').classList.add('hidden');
+            document.getElementById('content-cash').classList.add('hidden');
+
+            if (type === 'qr') {
+                document.getElementById('tab-qr').className = "bg-white py-1 rounded-md shadow-sm text-emerald-800 font-bold cursor-pointer transition";
+                document.getElementById('content-qr').classList.remove('hidden');
+                document.getElementById('receipt-status-badge').innerHTML = `ชำระแล้ว: <span id="receipt-paid">${currentNetPayable.toFixed(2)} บาท</span> (Thai QR Payment)`;
+            } else if (type === 'cash') {
+                document.getElementById('tab-cash').className = "bg-white py-1 rounded-md shadow-sm text-emerald-800 font-bold cursor-pointer transition";
+                document.getElementById('content-cash').classList.remove('hidden');
+                calculateChange();
+            }
+        }
+
+        function calculateChange() {
+            const given = parseFloat(document.getElementById('input-cash-given').value) || 0;
+            const change = given - currentNetPayable;
+            const changeStr = change >= 0 ? change.toFixed(2) + ' บาท' : 'เงินไม่พอชำระ';
+            
+            document.getElementById('change-text').innerText = changeStr;
+            document.getElementById('receipt-change').innerText = change >= 0 ? change.toFixed(2) : '0.00';
+            document.getElementById('receipt-status-badge').innerHTML = `ชำระด้วยเงินสดรับมา: ${given.toFixed(2)} | ทอน: <span id="receipt-change">${change >= 0 ? change.toFixed(2) : '0.00'}</span> บาท`;
+        }
+
+        function selectPatient(data, element) {
+            currentNetPayable = data.net;
+            document.getElementById('patient-name').innerText = `${data.name} (อายุ ${data.age})`;
+            document.getElementById('patient-meta').innerText = `HN: ${data.hn} | VN: ${data.vn}`;
+            document.getElementById('patient-rights').innerText = data.rights;
+
+            document.getElementById('order-doctor').innerText = data.doctor;
+            document.getElementById('order-rx').innerText = data.rx;
+
+            const tbody = document.getElementById('bill-table-body');
+            tbody.innerHTML = '';
+            data.items.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = index % 2 === 1 ? "hover:bg-slate-50 bg-emerald-50/20" : "hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2 text-slate-800">${item.no} ${item.name}</td>
+                    <td class="p-2 text-right font-medium">${item.price}</td>
+                    <td class="p-2 text-right text-emerald-700 font-medium">${item.sub}</td>
+                    <td class="p-2 text-right text-slate-500">${item.unpay}</td>
+                    <td class="p-2 text-right text-slate-500">${item.self}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('sum-total').innerText = data.total;
+            document.getElementById('sum-cover').innerText = data.cover;
+            document.getElementById('sum-copay').innerText = data.coPay;
+            document.getElementById('sum-net').innerText = data.net.toFixed(2) + ' บาท';
+
+            document.getElementById('qr-amount').innerText = data.net.toFixed(2);
+            document.getElementById('receipt-patient').innerText = `ผู้ป่วย: ${data.name} (HN: ${data.hn})`;
+            document.getElementById('receipt-net').innerText = data.net.toFixed(2) + ' บาท';
+
+            document.getElementById('input-cash-given').value = (data.net + 70).toFixed(2);
+            calculateChange();
+
+            const cards = document.querySelectorAll('.queue-card');
+            cards.forEach(card => {
+                card.className = "queue-card border border-slate-200 bg-white rounded-xl p-2.5 cursor-pointer hover:border-emerald-400 transition";
+            });
+            element.className = "queue-card border-2 border-emerald-500 bg-emerald-50/30 rounded-xl p-2.5 shadow-sm cursor-pointer transition";
+        }
+    </script>
+    <script>
+        function goToDept(dept) {
+            // สามารถเปลี่ยนชื่อไฟล์ปลายทางด้านล่างนี้ให้ตรงกับชื่อไฟล์ HTML จริงของแต่ละแผนกที่คุณสร้างไว้ได้เลยครับ
+            const routes = {
+                'login': 'index.html',
+                
+            };
+
+            if (routes[dept]) {
+                window.location.href = routes[dept];
+            }
+        }
+    </script>
+</body>
+</html>

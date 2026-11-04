@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNRH Smart HIS - All-in-One Doctor Station</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- นำเข้าฟอนต์ Noto Sans Thai จาก Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ตั้งค่าให้ใช้ Noto Sans Thai เป็นฟอนต์หลักทั้งระบบ */
+        body { font-family: 'Noto Sans Thai', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+                <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                <div>
+                    <h1 class="font-bold text-emerald-800 text-base leading-tight">MNRH Smart HIS</h1>
+                    <select class="text-xs text-slate-500 bg-transparent border-none focus:outline-none cursor-pointer font-medium">
+                        <option>ห้องตรวจอายุรกรรม 03</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="relative w-96">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </span>
+                <input type="text" placeholder="ค้นหาผู้ป่วยด้วย HN, เลขบัตร ปชช., หรือชื่อ... (Ctrl+K)" class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 text-xs">
+            <span class="flex items-center text-emerald-600 font-medium"><span class="w-2 h-2 bg-emerald-500 rounded-full inline-block mr-1.5"></span> ออนไลน์</span>
+            <div class="relative cursor-pointer">
+                <span class="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full text-[10px] px-1 font-bold">3</span>
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg text-emerald-900 font-medium">
+                นพ. ทวี ยิ่งสง่า <span class="text-slate-500 font-normal">(แพทย์อายุรกรรม)</span> <br>
+                <!--<span class="text-[10px] text-slate-400">09:41 น.</span> -->
+            </div>
+            <!-- ปุ่มออกจากระบบ (Logout Button อยู่มุมบนขวา) -->
+            <button onclick="goToDept('login')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-lg font-semibold text-xs flex items-center gap-1 transition shadow-sm cursor-pointer" title="ออกจากระบบ">
+                <span>🚪</span> ออกจากระบบ
+            </button>
+        </div>
+    </header>
+
+    <!-- Sub-header Patient Info & Allergy Alert (ข้อมูลผู้ป่วยด้านบนจะเปลี่ยนตามคนที่เลือก) -->
+    <section class="bg-white border-b border-slate-200 px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center space-x-3">
+            <div class="bg-slate-200 p-2 rounded-full text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h2 id="header-name" class="font-bold text-sm text-slate-900">นาย สมชาย ใจดี</h2>
+                    <span id="header-age" class="text-xs text-slate-500">อายุ 58 ปี</span>
+                    <span id="header-queue" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">คิว A-104</span>
+                </div>
+                <p id="header-hn" class="text-[11px] text-slate-500">HN: 6704-9182 | VN: 691831 | สิทธิ์: บัตรทอง 30 บาท</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 text-xs">
+            <div class="bg-amber-50 border border-amber-200 px-2 py-1 rounded font-semibold text-amber-800">
+                BP: <span id="header-bp">142/86</span> <span class="text-[10px] font-normal text-amber-600">mmHg</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 px-2 py-1 rounded font-semibold text-slate-700">
+                PR: <span id="header-pr">96</span> <span class="text-[10px] font-normal text-slate-500">bpm</span>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 px-2 py-1 rounded font-semibold text-slate-700">
+                eGFR: <span id="header-egfr">62.4</span>
+            </div>
+            <div class="bg-rose-50 border border-rose-200 px-2 py-1 rounded font-semibold text-rose-700">
+                Temp: <span id="header-temp">38.2°C</span>
+            </div>
+        </div>
+
+        <div class="bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5 flex items-center space-x-2 text-xs">
+            <span class="text-rose-600 font-bold text-sm">⚠️</span>
+            <div>
+                <p class="font-bold text-rose-800">แพ้ยา: <span id="header-allergy">PENICILLIN (รุนแรง)</span></p>
+                <p class="text-[10px] text-rose-600">ตรวจสอบประวัติแพ้ยาก่อนสั่งยาทุกครั้ง</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Workspace Content Area -->
+    <main class="flex-1 flex overflow-hidden p-3 gap-3">
+        
+        <!-- Column 1: Patient Queue List (คลิกเปลี่ยนผู้ป่วยตรงนี้) -->
+        <aside class="w-80 bg-white border border-slate-200 rounded-xl flex flex-col shrink-0 overflow-hidden shadow-sm">
+            <div class="p-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+                <span class="font-bold text-xs text-slate-800 flex items-center space-x-1.5">
+                    <span class="text-emerald-700">👥</span>
+                    <span>คิวรอตรวจ (14 คน)</span>
+                </span>
+                <span class="border border-slate-300 rounded p-1 bg-white text-slate-500 text-xs">📑</span>
+            </div>
+
+            <div class="p-2 border-b border-slate-100 flex space-x-1 text-[11px] shrink-0">
+                <button class="bg-emerald-700 text-white px-2.5 py-1 rounded font-medium">ทั้งหมด</button>
+                <!-- <button class="text-slate-600 px-2.5 py-1 rounded hover:bg-slate-100">เคสด่วน</button>
+                <button class="text-slate-600 px-2.5 py-1 rounded hover:bg-slate-100">ผลแล็บออกแล้ว</button> -->
+                
+            </div>
+
+            <!-- Queue Items (คลิกที่การ์ดเพื่อสลับข้อมูลผู้ป่วย) -->
+            <div class="flex-1 overflow-y-auto p-2 space-y-2.5 text-xs">
+                
+                <!-- คิวที่ 1: สมชาย -->
+                <div onclick="selectPatient('A-104')" id="card-A-104" class="border-2 border-emerald-500 bg-emerald-50/40 rounded-lg p-2.5 cursor-pointer transition hover:bg-emerald-50">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-emerald-800">A-104</span>
+                        <span class="text-[10px] text-emerald-700 font-bold flex items-center space-x-1">
+                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block"></span>
+                            <span>กำลังตรวจ</span>
+                        </span>
+                    </div>
+                    <p class="font-bold text-slate-900">นาย สมชาย ใจดี</p>
+                    <p class="text-[11px] text-slate-500">ชาย 58 ปี • HN 6704-9182</p>
+                    <p class="text-[11px] text-slate-600 mt-1">ไข้ ไอ เจ็บคอ 3 วัน</p>
+                    <div class="mt-2 text-[10px] text-slate-400 text-right">เริ่มตรวจ 09:41</div>
+                </div>
+
+                <!-- คิวที่ 2: สายใจ -->
+                <div onclick="selectPatient('A-105')" id="card-A-105" class="border border-slate-200 bg-white rounded-lg p-2.5 cursor-pointer transition hover:border-emerald-400">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-800">A-105</span>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold">BP สูง</span>
+                    </div>
+                    <p class="font-bold text-slate-900">นาง สายใจ บุญมา</p>
+                    <p class="text-[11px] text-slate-500">หญิง 67 ปี • HN 6502-3811</p>
+                    <div class="flex justify-between items-center mt-1 text-[11px]">
+                        <span class="text-amber-700 font-medium">ปวดศีรษะ · BP 178/98</span>
+                        <span class="text-slate-400">รอ 24 นาที</span>
+                    </div>
+                </div>
+
+                <!-- คิวที่ 3: วิชัย -->
+                <div onclick="selectPatient('A-106')" id="card-A-106" class="border border-slate-200 bg-white rounded-lg p-2.5 cursor-pointer transition hover:border-emerald-400">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-800">A-106</span>
+                        <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-semibold">ผลแล็บออกแล้ว</span>
+                    </div>
+                    <p class="font-bold text-slate-900">นาย วิชัย พงษ์ดี</p>
+                    <p class="text-[11px] text-slate-500">ชาย 45 ปี • HN 6611-0248</p>
+                    <div class="flex justify-between items-center mt-1 text-[11px]">
+                        <span class="text-slate-600">ติดตามไขมันในเลือด</span>
+                        <span class="text-slate-400">รอ 18 นาที</span>
+                    </div>
+                </div>
+
+                <!-- คิวที่ 4: มาลี -->
+                <div onclick="selectPatient('A-107')" id="card-A-107" class="border border-slate-200 bg-white rounded-lg p-2.5 cursor-pointer transition hover:border-emerald-400">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-slate-800">A-107</span>
+                        <span class="text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-semibold">ชีพจรสูง</span>
+                    </div>
+                    <p class="font-bold text-slate-900">นาง มาลี สุขใจ</p>
+                    <p class="text-[11px] text-slate-500">หญิง 52 ปี • HN 6708-1156</p>
+                    <div class="flex justify-between items-center mt-1 text-[11px]">
+                        <span class="text-amber-700 font-medium">ใจสั่น · PR 108 bpm</span>
+                        <span class="text-slate-400">รอ 12 นาที</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="py-1.5 text-center text-slate-500 text-[11px] bg-slate-50 border-t border-slate-200 shrink-0">
+                ดูคิวที่เหลืออีก 10 คน ▾
+            </div>
+
+            <div class="p-2.5 bg-white border-t border-slate-200 shrink-0 space-y-2">
+                <div class="grid grid-cols-2 text-center text-[11px] divide-x divide-slate-200">
+                    <div>
+                        <p class="text-slate-400 text-[10px]">ตรวจแล้ววันนี้</p>
+                        <p class="font-bold text-slate-800 text-sm">18 ราย</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 text-[10px]">รอเฉลี่ย</p>
+                        <p class="font-bold text-slate-800 text-sm">21 นาที</p>
+                    </div>
+                </div>
+                <button class="w-full bg-emerald-700 text-white py-2 rounded-lg text-xs font-bold hover:bg-emerald-800 flex items-center justify-center space-x-1.5 shadow-sm">
+                    <span>🔊 เรียกคิวถัดไป (F2)</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Column 2: บันทึกการตรวจ SOAP (ข้อความเปลี่ยนตามผู้ป่วย) -->
+        <section class="flex-1 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden shadow-sm">
+            <div class="px-4 py-2.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-xs text-slate-800">📝 บันทึกการตรวจ</span>
+                    <span class="bg-slate-200 text-slate-700 text-[10px] px-2 py-0.5 rounded font-semibold">SOAP</span>
+                </div>
+                <button class="text-xs text-emerald-600 font-medium hover:underline">ใช้เทมเพลต</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+                <div class="border border-slate-200 rounded-lg p-3">
+                    <div class="flex justify-between font-bold text-slate-700 mb-1">
+                        <span>อาการสำคัญและประวัติ (Chief Complaint / S)</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Subjective</span>
+                    </div>
+                    <textarea id="soap-cc" class="w-full border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-emerald-500 h-16 resize-none">มีไข้ ไอ เจ็บคอ 3 วัน รับประทานยาลดไข้แล้วไม่ดีขึ้น</textarea>
+                </div>
+
+                <div class="border border-slate-200 rounded-lg p-3">
+                    <div class="flex justify-between font-bold text-slate-700 mb-2">
+                        <span>ตรวจร่างกาย (Physical Exam / O)</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Objective</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 mb-2 text-slate-600">
+                        <div>T: <span id="pe-temp">38.2</span> °C</div>
+                        <div>RR: <span id="pe-rr">18</span> /min</div>
+                        <div>BW: <span id="pe-bw">72</span> kg</div>
+                        <div>BMI: <span id="pe-bmi">25.5</span></div>
+                    </div>
+                    <input id="pe-note" type="text" value="Clear breath sounds, no rhonchi" class="w-full border border-slate-200 rounded p-1.5 text-xs">
+                </div>
+
+                <div class="border border-slate-200 rounded-lg p-3">
+                    <div class="flex justify-between font-bold text-slate-700 mb-2">
+                        <span>การวินิจฉัย (Diagnosis)</span>
+                        <button class="text-emerald-600 hover:underline text-[11px]">+ เพิ่ม ICD-10</button>
+                    </div>
+                    <div class="space-y-2" id="dx-container">
+                        <div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[11px]">J06.9</span>
+                                <span>Acute URI</span>
+                            </div>
+                            <span class="bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded">โรคหลัก</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Column 3: Tabbed Panel (ขวาสุด) -->
+        <section class="w-[450px] bg-white border border-slate-200 rounded-xl flex flex-col shrink-0 overflow-hidden shadow-sm">
+            <!-- Tabs Header -->
+            <div class="flex border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600 shrink-0">
+                <button onclick="switchTab('drug')" id="btn-drug" class="flex-1 py-2.5 text-center border-b-2 border-emerald-600 text-emerald-700 bg-white">✓ สั่งยา (4)</button>
+                <button onclick="switchTab('lab')" id="btn-lab" class="flex-1 py-2.5 text-center hover:bg-slate-100">สั่ง LAB & รังสี</button>
+                <button onclick="switchTab('history')" id="btn-history" class="flex-1 py-2.5 text-center hover:bg-slate-100">ผลแล็บย้อนหลัง</button>
+                <button onclick="switchTab('cert')" id="btn-cert" class="flex-1 py-2.5 text-center hover:bg-slate-100">ใบนัด & ใบรับรอง</button>
+            </div>
+
+            <!-- Tab Content: สั่งยา (เพิ่มกรอบปุ่มถังขยะและเอฟเฟกต์โฮเวอร์เปลี่ยนสี) -->
+            <div id="tab-drug" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs block">
+                <!-- ปุ่มดึงยาเดิม -->
+                <div class="border border-emerald-300 bg-emerald-50/60 p-2.5 rounded-lg text-emerald-800 font-medium flex items-center space-x-2 cursor-pointer hover:bg-emerald-100">
+                    <span class="text-emerald-600 font-bold">🔄</span>
+                    <span>ดึงยาเดิมทั้งหมด (1-Click)</span>
+                </div>
+
+                <!-- ช่องค้นหาชื่อยา -->
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" placeholder="ค้นหาชื่อยา / Generic name / รหัสยา" class="w-full pl-9 pr-12 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-500">
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-[10px] text-slate-400 font-bold">F4</span>
+                </div>
+
+                <!-- ตารางหัวข้อ -->
+                <div class="flex justify-between text-slate-400 px-1 text-[11px] font-medium border-b border-slate-100 pb-1">
+                    <span>รายการยา / วิธีใช้</span>
+                    <span>จำนวน</span>
+                </div>
+
+                <!-- รายการยาที่ 1 -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-white shadow-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center space-x-2 font-bold text-slate-900">
+                            <span class="text-emerald-600">💊</span>
+                            <span>Metformin 500 mg</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-normal border border-slate-200">ยาเดิม</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-emerald-700 font-semibold">60 เม็ด <span class="text-[10px] text-slate-400 font-normal">(30 วัน)</span></span>
+                            <!-- ปุ่มถังขยะมีกรอบและเปลี่ยนสีเมื่อนำเมาส์ไปชี้ -->
+                            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-400 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 transition" title="ลบรายการยา">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-600 pl-6">ครั้งละ 1 เม็ด วันละ 2 ครั้ง หลังอาหาร เช้า-เย็น</p>
+                </div>
+
+                <!-- รายการยาที่ 2 -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-white shadow-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center space-x-2 font-bold text-slate-900">
+                            <span class="text-emerald-600">💊</span>
+                            <span>Amlodipine 5 mg</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-normal border border-slate-200">ยาเดิม</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-emerald-700 font-semibold">30 เม็ด <span class="text-[10px] text-slate-400 font-normal">(30 วัน)</span></span>
+                            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-400 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 transition" title="ลบรายการยา">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-600 pl-6">ครั้งละ 1 เม็ด วันละ 1 ครั้ง หลังอาหารเช้า</p>
+                </div>
+
+                <!-- รายการยาที่ 3 -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-white shadow-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center space-x-2 font-bold text-slate-900">
+                            <span class="text-emerald-600">💊</span>
+                            <span>Paracetamol 500 mg</span>
+                            <span class="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-normal border border-emerald-200">ยาใหม่</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-emerald-700 font-semibold">20 เม็ด <span class="text-[10px] text-slate-400 font-normal">(5 วัน)</span></span>
+                            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-400 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 transition" title="ลบรายการยา">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-600 pl-6">ครั้งละ 2 เม็ด เวลามีไข้ ทุก 4-6 ชั่วโมง</p>
+                </div>
+
+                <!-- รายการยาที่ 4 -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-white shadow-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <div class="flex items-center space-x-2 font-bold text-slate-900">
+                            <span class="text-emerald-600">💊</span>
+                            <span>Tessalon Perles 100 mg</span>
+                            <span class="text-[10px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-normal border border-emerald-200">ยาใหม่</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-emerald-700 font-semibold">30 แคปซูล <span class="text-[10px] text-slate-400 font-normal">(5 วัน)</span></span>
+                            <button class="p-1.5 border border-slate-200 rounded-lg text-slate-400 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-600 transition" title="ลบรายการยา">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-600 pl-6">ครั้งละ 1 แคปซูล วันละ 3 ครั้ง หลังอาหาร (แก้ไอ)</p>
+                </div>
+
+                <!-- สถานะตรวจสอบการแพ้ยา -->
+                <div class="flex items-center space-x-2 text-[11px] pt-1">
+                    <span class="text-emerald-600 font-bold">✓</span>
+                    <span class="text-slate-600">ไม่พบยาซ้ำซ้อนในรายการ</span>
+                    <span class="text-slate-300">·</span>
+                    <span class="text-rose-600 font-bold">หลีกเลี่ยง PENICILLIN</span>
+                </div>
+
+                <!-- สรุปคำสั่งวันนี้ -->
+                <div class="bg-emerald-50/60 border border-emerald-200 rounded-lg p-2.5">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-emerald-900">สรุปคำสั่งวันนี้</span>
+                        <span class="font-bold text-emerald-800">ยา 4 รายการ</span>
+                    </div>
+                    <p class="text-[11px] text-emerald-700 flex items-center space-x-1">
+                        <span>✓</span>
+                        <span>พร้อมส่งคำสั่งเมื่อเสร็จสิ้นการตรวจ · ครอบคลุมตามสิทธิ์การรักษา</span>
+                    </p>
+                </div>
+
+                <!-- ตรวจสอบรายการก่อนส่งคำสั่ง -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-slate-50/50">
+                    <p class="font-bold text-slate-800 mb-1">ตรวจสอบรายการก่อนส่งคำสั่ง</p>
+                    <p class="text-[11px] text-slate-500 mb-2">ทบทวนยาเดิม ขนาดยา และประวัติแพ้ยาของผู้ป่วย</p>
+                    <p class="text-[11px] font-bold text-rose-600">ประวัติแพ้ยา: PENICILLIN (รุนแรง)</p>
+                </div>
+            </div>
+
+            <!-- Tab Content อื่นๆ (ซ่อนไว้ก่อน) -->
+            <!-- Tab Content: สั่ง LAB & รังสี (ตามรูปภาพใหม่ที่คุณต้องการ) -->
+            <div id="tab-lab" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs block">
+                <!-- Preset Buttons -->
+                <div class="flex flex-wrap gap-2">
+                    <button class="border border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-medium">+ ชุดตรวจ NCDs / เบาหวาน</button>
+                    <button class="border border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-medium">+ ชุดตรวจไต eGFR</button>
+                    <button class="border border-emerald-300 text-emerald-800 bg-emerald-50/50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-medium">+ Pre-op Panel</button>
+                </div>
+
+                <!-- LIS Section -->
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center font-bold text-slate-700">
+                        <span class="flex items-center space-x-1.5">
+                            <span class="text-emerald-700">🧪</span>
+                            <span>ตรวจทางห้องปฏิบัติการ (LIS)</span>
+                        </span>
+                        <span class="text-emerald-700 font-normal text-[11px]">เลือก 3 รายการ</span>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        <label class="flex items-start space-x-3 p-2.5 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" checked class="mt-0.5 accent-emerald-600 w-4 h-4 rounded">
+                            <div>
+                                <p class="font-bold text-slate-900">Fasting Blood Sugar (FBS)</p>
+                                <p class="text-[11px] text-slate-500">สั่งตรวจติดตามเบาหวาน</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center space-x-3 p-2.5 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" checked class="mt-0.5 accent-emerald-600 w-4 h-4 rounded">
+                            <span class="font-bold text-slate-900">HbA1c (Glycated Hemoglobin)</span>
+                        </label>
+                        <label class="flex items-start space-x-3 p-2.5 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" checked class="mt-0.5 accent-emerald-600 w-4 h-4 rounded">
+                            <div>
+                                <p class="font-bold text-slate-900">BUN, Creatinine & eGFR</p>
+                                <p class="text-[11px] text-slate-500">ค่าไตล่าสุด 62.4 - ปลอดภัย</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center space-x-3 p-2.5 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" class="mt-0.5 accent-emerald-600 w-4 h-4 rounded">
+                            <span class="text-slate-700">CBC (Complete Blood Count)</span>
+                        </label>
+                    </div>
+                    <!-- Urgency Radio -->
+                    <div class="px-3 py-2 bg-slate-50 border-t border-slate-200 flex items-center space-x-6 text-[11px]">
+                        <span class="text-slate-500">ความเร่งด่วน</span>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="radio" name="urgency" checked class="accent-emerald-600">
+                            <span class="font-medium text-slate-800">Routine ปกติ</span>
+                        </label>
+                        <label class="flex items-center space-x-1.5 cursor-pointer">
+                            <input type="radio" name="urgency" class="accent-emerald-600">
+                            <span class="text-slate-600">STAT ด่วน</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- RIS / PACS Section -->
+                <div class="border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center font-bold text-slate-700">
+                        <span class="flex items-center space-x-1.5">
+                            <span class="text-emerald-700">🩻</span>
+                            <span>ตรวจทางรังสีวิทยาและภาพถ่าย (RIS / PACS)</span>
+                        </span>
+                        <span class="text-emerald-700 font-normal text-[11px]">เลือก 1 รายการ</span>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        <label class="flex items-start space-x-3 p-2.5 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" checked class="mt-0.5 accent-emerald-600 w-4 h-4 rounded">
+                            <div>
+                                <p class="font-bold text-slate-900">Chest PA Upright (41003)</p>
+                                <p class="text-[11px] text-slate-500">ตรวจคัดกรองปอด</p>
+                            </div>
+                        </label>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50/60 border-t border-emerald-100 text-[11px] text-emerald-900 flex items-center space-x-1.5">
+                        <span>✓</span>
+                        <span>eGFR 62.4 ml/min ไม่อยู่ในภาวะเสี่ยงไตจากการฉีดสี · ไม่มีเครื่องกระตุ้นหัวใจ</span>
+                    </div>
+                </div>
+
+                <!-- Summary Footer Box -->
+                <div class="bg-emerald-50/80 border border-emerald-200 rounded-lg p-2.5">
+                    <p class="font-bold text-emerald-900 text-xs">สรุปคำสั่งตรวจ: LAB 3 รายการ · รังสี 1 รายการ</p>
+                    <p class="text-[11px] text-emerald-700 flex items-center space-x-1 mt-0.5">
+                        <span>✓</span>
+                        <span>ส่งคำสั่งอัตโนมัติเมื่อกดบันทึก</span>
+                    </p>
+                </div>
+            </div>
+            <!-- Tab Content: ผลแล็บย้อนหลัง (ตรงตามรูปภาพตัวอย่างเป๊ะๆ และรองรับเลื่อน Scroll ได้) -->
+            <div id="tab-history" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs block">
+                <!-- Dropdown เลือก รอบตรวจ -->
+                <div class="relative">
+                    <select class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-bold text-slate-800 appearance-none focus:outline-none focus:border-emerald-500 cursor-pointer">
+                        <option>รอบตรวจ: 12 ส.ค. 2569 (ครั้งก่อน)</option>
+                        <option>รอบตรวจ: 3 ก.พ. 2569</option>
+                    </select>
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">▾</span>
+                </div>
+
+                <div class="flex justify-between items-center text-[11px] text-slate-500 px-1">
+                    <span>เปรียบเทียบกับ 3 ก.พ. 2569</span>
+                    <span class="font-bold text-emerald-700">ผลตรวจ 4 รายการ</span>
+                </div>
+                <!-- กล่องแสดงผลภาพถ่ายทางรังสีล่าสุด (X-Ray PACS Preview) -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-800 text-xs">ผลภาพถ่ายทางรังสีล่าสุด · Chest PA Upright (12 ส.ค. 2569)</span>
+                        <span class="text-[10px] text-slate-400 font-medium">PACS Preview</span>
+                    </div>
+                    <div class="flex items-start space-x-3 bg-slate-50/60 p-2.5 rounded-lg border border-slate-100">
+                        <!-- รูปภาพ X-Ray จำลอง -->
+                        <div class="w-20 h-20 bg-slate-900 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-slate-300 shadow-inner">
+                            <div class="text-white text-center p-1">
+                                <svg class="w-8 h-8 mx-auto text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                        </div>
+                        <div class="flex-1 space-y-1.5">
+                            <p class="text-[11px] text-slate-700 leading-relaxed font-medium">Impression: Normal cardiac silhouette, clear bilateral lung parenchyma, no active pulmonary infiltration.</p>
+                            <!-- ปุ่มเปิดดูฟิล์ม -->
+                            <button class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 bg-white border border-emerald-500 text-emerald-800 rounded-lg text-[11px] font-semibold hover:bg-emerald-50 transition shadow-xs">
+                                <span>🔍</span>
+                                <span>เปิดดูฟิล์มละเอียดผ่าน PACS Viewer ↗</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Grid ผลตรวจ 4 ช่อง -->
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- ช่อง 1: FBS -->
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-700 text-[11px]">FBS (น้ำตาลสะสม)</span>
+                                <span class="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 rounded font-bold">สูงกว่าเกณฑ์</span>
+                            </div>
+                            <p class="text-xl font-bold text-rose-600 my-1">156 <span class="text-xs font-normal text-slate-500">mg/dL</span></p>
+                        </div>
+                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+                            <span>ครั้งก่อน 142 mg/dL</span>
+                            <!-- กราฟแนวโน้มจิ๋ว -->
+                            <svg class="w-12 h-5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 50 20">
+                                <path d="M5 15 L25 10 L45 3"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- ช่อง 2: HbA1c -->
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-700 text-[11px]">HbA1c</span>
+                                <span class="bg-rose-100 text-rose-700 text-[10px] px-1.5 py-0.5 rounded font-bold">สูง</span>
+                            </div>
+                            <p class="text-xl font-bold text-rose-600 my-1">7.8 <span class="text-xs font-normal text-slate-500">%</span></p>
+                        </div>
+                        <div class="flex justify-between items-end mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+                            <span>ครั้งก่อน 7.4%</span>
+                            <svg class="w-12 h-5 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 50 20">
+                                <path d="M5 14 L25 9 L45 3"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- ช่อง 3: Creatinine -->
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-700 text-[11px]">Creatinine</span>
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">ปกติ</span>
+                            </div>
+                            <p class="text-xl font-bold text-slate-800 my-1">1.1 <span class="text-xs font-normal text-slate-500">mg/dL</span></p>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-emerald-700 font-medium flex justify-between">
+                            <span>eGFR 62.4 mL/min</span>
+                            <span>คงที่</span>
+                        </div>
+                    </div>
+
+                    <!-- ช่อง 4: Total Cholesterol -->
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs relative flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-1">
+                                <span class="font-bold text-slate-700 text-[11px]">Total Cholesterol</span>
+                                <span class="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.5 rounded font-bold">ปกติ</span>
+                            </div>
+                            <p class="text-xl font-bold text-slate-800 my-1">198 <span class="text-xs font-normal text-slate-500">mg/dL</span></p>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+                            ผลตรวจในรอบที่เลือก
+                        </div>
+                    </div>
+                </div>
+
+                <!-- กล่องกราฟแนวโน้ม (Trend Chart Box) -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-bold text-slate-800 text-xs">แนวโน้มการควบคุมน้ำตาล · FBS</span>
+                        <span class="text-[10px] text-slate-400">3 รอบตรวจย้อนหลัง</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mb-1">mg/dL</p>
+                    
+                    <!-- กราฟจำลอง -->
+                    <div class="relative h-28 border-b border-l border-slate-200 flex items-end justify-around px-6 pb-2">
+                        <div class="absolute inset-x-0 top-6 border-b border-dashed border-slate-100"></div>
+                        <div class="absolute inset-x-0 top-14 border-b border-dashed border-slate-100"></div>
+                        
+                        <!-- จุดที่ 1: ไม่มีข้อมูล -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="text-[10px] text-slate-400 mb-6">ไม่มีข้อมูล</span>
+                        </div>
+                        <!-- จุดที่ 2: 3 ก.พ. 2569 -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="font-bold text-rose-600 text-[11px] mb-1">142</span>
+                            <div class="w-2.5 h-2.5 bg-rose-600 rounded-full border-2 border-white shadow"></div>
+                        </div>
+                        <!-- จุดที่ 3: 12 ส.ค. 2569 -->
+                        <div class="flex flex-col items-center z-10">
+                            <span class="font-bold text-rose-600 text-[11px] mb-1">156</span>
+                            <div class="w-2.5 h-2.5 bg-rose-600 rounded-full border-2 border-white shadow"></div>
+                        </div>
+
+                        <!-- เส้นเชื่อมกราฟ -->
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none" viewBox="0 0 100 100">
+                            <path d="M 45 65 L 78 40" stroke="#e11d48" stroke-width="2" fill="none"></path>
+                        </svg>
+                    </div>
+
+                    <div class="flex justify-between text-[10px] text-slate-400 mt-2 px-2">
+                        <span>รอบเก่าสุด · ไม่มีข้อมูล</span>
+                        <span>3 ก.พ. 2569</span>
+                        <span>12 ส.ค. 2569</span>
+                    </div>
+                    <p class="text-[9px] text-slate-400 mt-1">เว้นช่วงรอบที่ไม่มีข้อมูล · แสดงเฉพาะผลตรวจที่มีบันทึก</p>
+                </div>
+
+                <!-- ปุ่มเปิดดูผลแล็บฉบับเต็ม -->
+                <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-2.5 text-center cursor-pointer hover:bg-emerald-100">
+                    <span class="font-bold text-emerald-800 text-xs">📄 เปิดดูผลแล็บฉบับเต็มและใบรายงานผลชันสูตร (LIS)</span>
+                </div>
+            </div>
+            <!-- Tab Content: ใบนัด & ใบรับรองแพทย์ (อัปเดตระบบปฏิทินและปุ่มสัปดาห์) -->
+            <div id="tab-cert" class="flex-1 overflow-y-auto p-3 space-y-3 text-xs block">
+                
+                <!-- ส่วนที่ 1: ใบนัดหมายตรวจติดตามอาการ -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs space-y-3">
+                    <div class="font-bold text-slate-800 flex items-center space-x-1.5">
+                        <span class="text-emerald-700">📅</span>
+                        <span>ใบนัดหมายตรวจติดตามอาการ</span>
+                    </div>
+
+                    <!-- ปุ่มลัดสัปดาห์ (คลิกแล้วเปลี่ยนสี Active และคำนวณวันในปฏิทินให้อัตโนมัติ) 
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-wk2" onclick="setWeeks(2)" class="border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition">+ 2 สัปดาห์</button>
+                        <button id="btn-wk4" onclick="setWeeks(4)" class="border border-emerald-500 bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition">+ 4 สัปดาห์</button>
+                        <button id="btn-wk8" onclick="setWeeks(8)" class="border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition">+ 8 สัปดาห์</button>
+                    </div>-->
+
+                    <!-- ช่องเลือก วัน-เวลานัด (ปฏิทิน Calendar Input) -->
+                    <div>
+                        <label class="block text-slate-500 text-[11px] mb-1">วัน-เวลานัด (คลิกเลือกปฏิทินหรือเปลี่ยนสัปดาห์ด้านบน)</label>
+                        <div class="flex items-center space-x-2">
+                            <!-- Input แบบ Date ให้เลือกวันได้ -->
+                            <input type="date" id="appointment-date" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2 font-medium text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                            <!-- เลือกช่วงเวลา -->
+                            <select class="bg-slate-50 border border-slate-200 rounded-lg p-2 font-medium text-slate-800 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                                <option>09:00 - 11:00 น.</option>
+                                <option>13:00 - 15:00 น.</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- แผนก/ห้องตรวจ -->
+                    <div>
+                        <label class="block text-slate-500 text-[11px] mb-1">แผนก/ห้องตรวจ</label>
+                        <div class="relative">
+                            <select class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 font-medium text-slate-800 appearance-none focus:outline-none focus:border-emerald-500 cursor-pointer">
+                                <option>🏥 คลินิกอายุรกรรม (OPD-04)</option>
+                                <option>🏥 คลินิกโรคเรื้อรัง (NCD)</option>
+                            </select>
+                            <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">▾</span>
+                        </div>
+                    </div>
+
+                    <!-- คำแนะนำการเตรียมตัว -->
+                    <div>
+                        <label class="block text-slate-500 text-[11px] mb-1">คำแนะนำการเตรียมตัว</label>
+                        <div class="space-y-1.5 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" checked class="accent-emerald-600 w-4 h-4 rounded">
+                                <span class="text-slate-800">เจาะเลือดก่อนพบแพทย์ (งดน้ำและอาหาร 8 ชม.)</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="accent-emerald-600 w-4 h-4 rounded">
+                                <span class="text-slate-700">ตรวจคลื่นไฟฟ้าหัวใจ (EKG)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ส่วนที่ 2: ใบรับรองแพทย์อิเล็กทรอนิกส์ -->
+                <div class="border border-slate-200 rounded-xl p-3 bg-white shadow-xs space-y-3">
+                    <div class="font-bold text-slate-800 flex items-center space-x-1.5">
+                        <span class="text-emerald-700">📄</span>
+                        <span>ใบรับรองแพทย์อิเล็กทรอนิกส์</span>
+                    </div>
+
+                    <div class="space-y-2 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" checked class="accent-emerald-600 w-4 h-4 rounded">
+                            <span class="font-bold text-slate-900">ออกใบรับรองแพทย์สำหรับเคสนี้</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="cert_type" checked class="accent-emerald-600">
+                            <span class="text-slate-800">สั่งหยุดพักรักษาตัว 2 วัน (2 - 3 พ.ย. 2569)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="radio" name="cert_type" class="accent-emerald-600">
+                            <span class="text-slate-700">รับรองการมารับตรวจรักษา</span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 text-[11px] mb-1">ข้อความรับรอง</label>
+                        <textarea id="soap-cc" class="w-full border border-slate-200 rounded p-2 text-xs focus:outline-none focus:border-emerald-500 h-16 resize-none">มีไข้ ไอ เจ็บคอ 3 วัน รับประทานยาลดไข้แล้วไม่ดีขึ้น</textarea>
+                    </div>
+
+                    <!-- กล่องลายเซ็นดิจิทัล -->
+                    <div class="bg-emerald-50/60 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-emerald-900 text-base italic font-serif">ทวี ยิ่งสง่า</p>
+                            <p class="text-[10px] text-slate-500">นพ. กวี ยิ่งสง่า</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-bold text-emerald-800 text-[11px]">พร้อมประทับตราดิจิทัลอัตโนมัติ</p>
+                            <p class="text-[10px] text-slate-400">ตัวอย่าง e-Signature · ยังไม่ได้ลงนาม</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer Action Buttons -->
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs shrink-0">
+                <button class="border border-slate-300 bg-white px-3 py-1.5 rounded font-medium hover:bg-slate-100">พิมพ์สรุป</button>
+                <button class="border border-slate-300 bg-white px-3 py-1.5 rounded font-medium hover:bg-slate-100">บันทึก (F8)</button>
+                <button class="bg-emerald-700 text-white px-4 py-1.5 rounded font-bold hover:bg-emerald-800">เสร็จสิ้นการตรวจ (F9)</button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript สำหรับสลับแท็บ และสลับข้อมูลผู้ป่วยเมื่อคลิกที่คิว -->
+    <script>
+        // ฐานข้อมูลจำลองของแต่ละคน
+        // ฟังก์ชันจำลองการกดปุ่มถังขยะนำยาออก (แสดงแจ้งเตือนโดยไม่ลบรายการจริง)
+        function simulateDelete(drugName) {
+            alert(`[จำลองการทำงาน] คุณคลิกนำรายการ "${drugName}" ออกจากคำสั่งยาแล้ว (ยังไม่ได้ลบข้อมูลจริงตามที่คุณต้องการ)`);
+        }
+
+        function setWeeks(weeks) {
+            [2, 4, 8].forEach(w => {
+                const btn = document.getElementById('btn-wk' + w);
+                if (btn) {
+                    if (w === weeks) {
+                        btn.className = "border border-emerald-500 bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-medium transition";
+                    } else {
+                        btn.className = "border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition";
+                    }
+                }
+            });
+
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() + (weeks * 7));
+            const year = targetDate.getFullYear();
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const day = String(targetDate.getDate()).padStart(2, '0');
+            
+            const dateInput = document.getElementById('appointment-date');
+            if (dateInput) dateInput.value = `${year}-${month}-${day}`;
+        }
+        const patients = {
+            "A-104": {
+                name: "นาย สมชาย ใจดี",
+                age: "อายุ 58 ปี",
+                hn: "HN: 6704-9182 | VN: 691831 | สิทธิ์: บัตรทอง 30 บาท",
+                bp: "142/86", pr: "96", egfr: "62.4", temp: "38.2°C",
+                allergy: "PENICILLIN (รุนแรง)",
+                cc: "มีไข้ ไอ เจ็บคอ 3 วัน รับประทานยาลดไข้แล้วไม่ดีขึ้น",
+                tempNum: "38.2", rr: "18", bw: "72", bmi: "25.5", peNote: "Clear breath sounds, no rhonchi",
+                dx: [{code: "J06.9", name: "Acute URI", type: "โรคหลัก"}, {code: "I10", name: "Hypertension", type: "โรคร่วม"}],
+                drugs: ["Metformin 500 mg (60 เม็ด)", "Amlodipine 5 mg (30 เม็ด)"]
+            },
+            "A-105": {
+                name: "นาง สายใจ บุญมา",
+                age: "อายุ 67 ปี",
+                hn: "HN: 6502-3811 | VN: 691832 | สิทธิ์: ข้าราชการ",
+                bp: "178/98", pr: "88", egfr: "58.1", temp: "36.8°C",
+                allergy: "SULFONAMIDES",
+                cc: "ปวดศีรษะ มึนงง ความดันโลหิตสูงต่อเนื่องมา 2 วัน",
+                tempNum: "36.8", rr: "20", bw: "65", bmi: "26.1", peNote: "Normal heart sound, mild dizziness",
+                dx: [{code: "I10", name: "Essential Hypertension", type: "โรคหลัก"}],
+                drugs: ["Amlodipine 10 mg (30 เม็ด)", "Atenolol 50 mg (30 เม็ด)"]
+            },
+            "A-106": {
+                name: "นาย วิชัย พงษ์ดี",
+                age: "อายุ 45 ปี",
+                hn: "HN: 6611-0248 | VN: 691833 | สิทธิ์: ประกันสังคม",
+                bp: "130/82", pr: "76", egfr: "90.0", temp: "36.5°C",
+                allergy: "ไม่แพ้ยา",
+                cc: "มาฟังผลตรวจเลือดติดตามไขมันในเลือดและตรวจสุขภาพประจำปี",
+                tempNum: "36.5", rr: "16", bw: "78", bmi: "24.2", peNote: "Abdomen soft, no mass",
+                dx: [{code: "E78.5", name: "Dyslipidemia", type: "โรคหลัก"}],
+                drugs: ["Simvastatin 20 mg (30 เม็ด)"]
+            },
+            "A-107": {
+                name: "นาง มาลี สุขใจ",
+                age: "อายุ 52 ปี",
+                hn: "HN: 6708-1156 | VN: 691834 | สิทธิ์: บัตรทอง 30 บาท",
+                bp: "135/85", pr: "108", egfr: "85.2", temp: "37.0°C",
+                allergy: "NSAIDs",
+                cc: "ใจสั่น เหนื่อยง่าย ชีพจรเต้นเร็วกว่าปกติ",
+                tempNum: "37.0", rr: "22", bw: "58", bmi: "22.8", peNote: "Tachycardia, regular rhythm",
+                dx: [{code: "R00.0", name: "Tachycardia, unspecified", type: "โรคหลัก"}],
+                drugs: ["Propranolol 10 mg (30 เม็ด)"]
+            }
+        };
+
+        function selectPatient(queueId) {
+            const p = patients[queueId];
+            if (!p) return;
+
+            // 1. เปลี่ยนแถบข้อมูลด้านบน
+            document.getElementById('header-name').innerText = p.name;
+            document.getElementById('header-age').innerText = p.age;
+            document.getElementById('header-queue').innerText = 'คิว ' + queueId;
+            document.getElementById('header-hn').innerText = p.hn;
+            document.getElementById('header-bp').innerText = p.bp;
+            document.getElementById('header-pr').innerText = p.pr;
+            document.getElementById('header-egfr').innerText = p.egfr;
+            document.getElementById('header-temp').innerText = p.temp;
+            document.getElementById('header-allergy').innerText = p.allergy;
+
+            // 2. เปลี่ยนไฮไลท์การ์ดคิวฝั่งซ้าย
+            ['A-104', 'A-105', 'A-106', 'A-107'].forEach(id => {
+                const card = document.getElementById('card-' + id);
+                if (id === queueId) {
+                    card.className = "border-2 border-emerald-500 bg-emerald-50/40 rounded-lg p-2.5 cursor-pointer transition hover:bg-emerald-50";
+                } else {
+                    card.className = "border border-slate-200 bg-white rounded-lg p-2.5 cursor-pointer transition hover:border-emerald-400";
+                }
+            });
+
+            // 3. เปลี่ยนข้อมูลในส่วนบันทึกการตรวจ SOAP ตรงกลาง
+            document.getElementById('soap-cc').value = p.cc;
+            document.getElementById('pe-temp').innerText = p.tempNum;
+            document.getElementById('pe-rr').innerText = p.rr;
+            document.getElementById('pe-bw').innerText = p.bw;
+            document.getElementById('pe-bmi').innerText = p.bmi;
+            document.getElementById('pe-note').value = p.peNote;
+
+            // อัปเดต Diagnosis
+            let dxHtml = '';
+            p.dx.forEach(d => {
+                dxHtml += `<div class="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-200">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[11px]">${d.code}</span>
+                        <span>${d.name}</span>
+                    </div>
+                    <span class="bg-emerald-700 text-white text-[10px] px-2 py-0.5 rounded">${d.type}</span>
+                </div>`;
+            });
+            document.getElementById('dx-container').innerHTML = dxHtml;
+
+            // 4. เปลี่ยนรายการยาในแท็บสั่งยา
+            let drugHtml = `<div class="bg-emerald-50 border border-emerald-200 p-2 rounded text-emerald-800 font-medium text-center">✨ ค้นหาเดิมทั้งหมด (1-Click)</div>`;
+            p.drugs.forEach(d => {
+                drugHtml += `<div class="border border-slate-200 rounded-lg p-2.5 bg-white">
+                    <div class="flex justify-between font-bold text-slate-900 mb-1">
+                        <span>💊 ${d} <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">ยาประจำตัว</span></span>
+                        <span class="text-emerald-700">ตามแผนการรักษา</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600">รับประทานตามคำแนะนำของแพทย์</p>
+                </div>`;
+            });
+            document.getElementById('drug-list').innerHTML = drugHtml;
+        }
+
+        // ฟังก์ชันสลับแท็บขวาปกติ
+        function switchTab(tabName) {
+            const tabs = ['drug', 'lab', 'history', 'cert'];
+            tabs.forEach(t => {
+                document.getElementById('tab-' + t).style.display = 'none';
+                document.getElementById('btn-' + t).className = 'flex-1 py-2.5 text-center hover:bg-slate-100 text-slate-600 font-semibold';
+            });
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            document.getElementById('btn-' + tabName).className = 'flex-1 py-2.5 text-center border-b-2 border-emerald-600 text-emerald-700 bg-white font-semibold';
+        }
+    </script>
+    <script>
+        function goToDept(dept) {
+            // สามารถเปลี่ยนชื่อไฟล์ปลายทางด้านล่างนี้ให้ตรงกับชื่อไฟล์ HTML จริงของแต่ละแผนกที่คุณสร้างไว้ได้เลยครับ
+            const routes = {
+                'login': 'index.html',
+                
+            };
+
+            if (routes[dept]) {
+                window.location.href = routes[dept];
+            }
+        }
+    </script>
+</body>
+</html>

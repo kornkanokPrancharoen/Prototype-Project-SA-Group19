@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - MNRH Smart HIS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen w-screen overflow-hidden flex">
+
+    <!-- ฝั่งซ้าย: แบนเนอร์สีเขียวเข้ม (Brand Section) -->
+    <div class="hidden lg:flex lg:w-7/12 bg-gradient-to-b from-[#0e5c53] to-[#042824] p-12 flex-col justify-between relative text-white">
+        <!-- โลโก้และชื่อโรงพยาบาล -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <!-- เปลี่ยนเป็นรูปโลโก้โรงพยาบาลบริเวณมุมบนซ้าย -->
+            <div class="w-9 h-9 rounded-lg overflow-hidden border border-emerald-200 shadow-xs flex items-center justify-center bg-white shrink-0">
+                <img src="https://upload.wikimedia.org/wikipedia/en/1/1b/Logo_of_Maharat_Nakhon_Ratchasima.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled" alt="Hospital Logo" class="w-full h-full object-cover">
+            </div>
+                <div>
+                    <h2 class="text-xs tracking-wider text-emerald-300 font-medium">MAHARAT NAKHON</h2>
+                    <h1 class="text-sm font-bold">RATCHASIMA HOSPITAL</h1>
+                </div>
+            </div>
+            <span class="text-sm font-semibold tracking-wide text-emerald-200">Smart HIS</span>
+        </div>
+
+        <!-- ข้อความตรงกลาง -->
+        <div class="max-w-xl">
+            <div class="inline-block border-l-2 border-emerald-400 pl-3 text-xs text-emerald-300 font-medium uppercase tracking-widest mb-3">
+                ระบบสำหรับบุคลากรทางการแพทย์
+            </div>
+            <h2 class="text-4xl font-bold mb-4 leading-tight">โรงพยาบาลมหาราชนครราชสีมา</h2>
+            <p class="text-gray-300 text-sm mb-6 leading-relaxed">
+                ระบบสารสนเทศบริการสุขภาพอัจฉริยะ (Smart HIS) เชื่อมโยงข้อมูลเพื่อการดูแลที่ดีกว่า
+            </p>
+            <div class="flex flex-wrap gap-2">
+                <span class="bg-white/10 text-emerald-200 text-xs px-3 py-1.5 rounded-full border border-white/10">Connected Care</span>
+                <span class="bg-white/10 text-emerald-200 text-xs px-3 py-1.5 rounded-full border border-white/10">Paperless Hospital</span>
+                <span class="bg-white/10 text-emerald-200 text-xs px-3 py-1.5 rounded-full border border-white/10">HA Re-accreditation 4</span>
+            </div>
+        </div>
+
+        <!-- ฟุตเตอร์ฝั่งซ้าย -->
+        <div class="flex justify-between items-center text-xs text-gray-400">
+            <div>
+                <p class="font-medium text-gray-300">เชื่อมโยงข้อมูล เพื่อการดูแลที่ดีกว่า</p>
+                <p class="text-[11px] opacity-75">สำหรับบุคลากรที่ได้รับอนุญาตเท่านั้น</p>
+            </div>
+            <div class="flex items-center space-x-1.5 text-gray-300">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <span>SECURE ACCESS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ฝั่งขวา: ฟอร์มเข้าสู่ระบบ และปุ่มลัด Demo Bypass -->
+    <div class="w-full lg:w-5/12 flex items-center justify-center p-6 bg-[#f9fafb] overflow-y-auto">
+        <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-gray-800">เข้าสู่ระบบบุคลากรทางการแพทย์</h3>
+                <p class="text-xs text-gray-500 mt-1">กรุณาระบุรหัสประจำตัวและรหัสผ่านเพื่อเข้าใช้งาน</p>
+            </div>
+
+            <!-- ตัวเลือกรูปแบบ Login -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl mb-4 text-xs font-medium">
+                <button class="bg-white py-2.5 rounded-lg shadow-sm text-emerald-700 font-semibold text-center">รหัสผ่านทั่วไป</button>
+                <button class="text-gray-500 py-2.5 rounded-lg text-center hover:text-gray-700">เสียบบัตรประชาชน / Smart Card</button>
+            </div>
+
+            <!-- ฟอร์มล็อกอินปกติ -->
+            <form onsubmit="event.preventDefault(); alert('จำลองการเข้าสู่ระบบปกติ');" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">รหัสบุคลากร / เลขใบประกอบวิชาชีพ</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </span>
+                        <input type="text" placeholder="ระบุรหัสบุคลากรหรือเลขใบประกอบวิชาชีพ" class="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">รหัสผ่าน</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </span>
+                        <input type="password" placeholder="ระบุรหัสผ่าน" class="w-full pl-10 pr-10 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-emerald-600 focus:bg-white transition">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-[#0d7363] hover:bg-[#0b5f52] text-white font-medium py-2.5 rounded-xl transition duration-200 flex items-center justify-center space-x-2 shadow-sm text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                    <span>เข้าสู่ระบบ (Sign In)</span>
+                </button>
+            </form>
+
+            <!-- ========================================================== -->
+            <!-- 🚀 ส่วนปุ่มลัดข้ามไปหน้าแผนกต่างๆ สำหรับอาจารย์ทดสอบระบบ -->
+            <!-- ========================================================== -->
+            <div class="mt-4 pt-3 border-t-2 border-dashed border-emerald-200 bg-emerald-50/50 p-3 rounded-xl">
+                <p class="text-xs font-semibold text-emerald-800 mb-2 flex items-center justify-between">
+                    <span>📌 ปุ่มลัดทดสอบระบบ (สำหรับอาจารย์):</span>
+                    <span class="text-[10px] bg-emerald-200 text-emerald-800 px-1.5 py-0.5 rounded">Demo Mode</span>
+                </p>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="goToDept('doctor')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>🧑‍⚕️ แพทย์</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('nurse')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>👩‍⚕️ พยาบาล/คัดกรอง</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('pharmacy')" class="bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>💊 ห้องยา</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('radiology')" class="bg-blue-700 hover:bg-blue-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>🩻 รังสี / เอ็กซเรย์</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('registration')" class="bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>📁 เวชระเบียน</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('cashier')" class="bg-amber-700 hover:bg-amber-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>💰 การเงิน</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    <button onclick="goToDept('dashboard')" class="bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>🧑‍⚕️ ผู้บริหาร</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                    <button onclick="goToDept('laboratory')" class="bg-teal-600 hover:bg-teal-700 text-white text-xs font-medium py-2 px-2.5 rounded-lg transition text-left flex items-center justify-between">
+                        <span>👩‍⚕️ แลป</span>
+                        <span class="text-[9px] bg-white/25 px-1 py-0.5 rounded">คลิก</span>
+                    </button>
+                </div>
+            </div>
+            <!-- สิ้นสุดส่วนปุ่มลัด -->
+
+        </div>
+    </div>
+
+    <!-- Script สำหรับสั่งการเปลี่ยนหน้าตามแผนก -->
+    <script>
+        function goToDept(dept) {
+            // สามารถเปลี่ยนชื่อไฟล์ปลายทางด้านล่างนี้ให้ตรงกับชื่อไฟล์ HTML จริงของแต่ละแผนกที่คุณสร้างไว้ได้เลยครับ
+            const routes = {
+                'doctor': 'doctor.html',
+                'nurse': 'nurse.html',
+                'pharmacy': 'pharmacy-station.html',
+                'radiology': 'radiology.html', // หรือหน้าเอ็กซเรย์
+                'registration': 'registration.html',
+                'cashier': 'cashier.html',
+                'dashboard': 'dashboard.html',
+                'laboratory': 'laboratory.html'
+            };
+
+            if (routes[dept]) {
+                window.location.href = routes[dept];
+            }
+        }
+    </script>
+
+</body>
+</html>
